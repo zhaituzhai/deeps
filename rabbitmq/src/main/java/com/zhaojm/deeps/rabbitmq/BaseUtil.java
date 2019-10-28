@@ -1,4 +1,4 @@
-package com.zhaojm.deeps.rabbitmq.helloworld;
+package com.zhaojm.deeps.rabbitmq;
 
 import com.rabbitmq.client.ConnectionFactory;
 
