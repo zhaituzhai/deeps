@@ -6,6 +6,7 @@
     <version>1.0.0</version>
     <modules>
         <module>rabbitmq</module>
+        <module>datastructure</module>
     </modules>
     <packaging>pom</packaging>
     <name>deeps</name>
