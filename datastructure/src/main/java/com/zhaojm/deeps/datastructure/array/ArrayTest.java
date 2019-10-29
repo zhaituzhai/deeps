@@ -1,4 +1,4 @@
-package com.zhaojm.deeps.datastructure;
+package com.zhaojm.deeps.datastructure.array;
 
 public class ArrayTest {
     // 数组长度
