@@ -7,6 +7,8 @@
     <modules>
         <module>rabbitmq</module>
         <module>datastructure</module>
+        <module>basal</module>
+        <module>jdk8</module>
     </modules>
     <packaging>pom</packaging>
     <name>deeps</name>
