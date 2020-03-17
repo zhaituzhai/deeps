@@ -71,11 +71,17 @@ public class TestStream {
         List<String> strUpper = stream8.map(String::toUpperCase).collect(Collectors.toList());
         strUpper.forEach(System.out::println);
 
-        System.out.println("=============");
+        System.out.println("=======rrr======");
 
         Stream<List<Integer>> stream9 = Stream.of(Arrays.asList(1), Arrays.asList(2,3,5), Arrays.asList(6,7));
 //        stream9.flatMap(theList -> theList.stream()).map(item -> item * item).forEach(System.out::println);
-        stream9.flatMap(Collection::stream).map(item -> item * item).forEach(System.out::println);
+//        stream9.flatMap(Collection::stream).map(item -> item * item).forEach(System.out::println);
+        stream9.flatMap(Collection::stream).map(item -> {
+            int result = item * item;
+            System.out.println(result);
+            return result;
+        }).collect(Collectors.toList());
+
 
         System.out.println("==========================");
 
@@ -90,8 +96,13 @@ public class TestStream {
         // 找出流中大于2的元素，然后将每个元素乘2，再忽略前两个元素，再取流前两个，最后求出流中元素的总和
 //        Stream.iterate(1, item -> item + 2).limit(6).filter(item -> item > 2)
 //                .mapToInt(item -> item * 2).skip(2).limit(2).max().ifPresent(System.out::println);
-        IntSummaryStatistics intSummaryStatistics = Stream.iterate(1, item -> item + 2).limit(6).filter(item -> item > 2)
-                .mapToInt(item -> item * 2).skip(2).limit(2).summaryStatistics();
+        IntSummaryStatistics intSummaryStatistics = Stream.iterate(1, item -> item + 2)
+                .limit(6)
+                .filter(item -> item > 2)
+                .mapToInt(item -> item * 2)
+                .skip(2)
+                .limit(2)
+                .summaryStatistics();
 
         System.out.println(intSummaryStatistics.getMin());
         System.out.println(intSummaryStatistics.getCount());
