@@ -1,4 +1,4 @@
-package com.zhaojm.basal.concurrent;
+package com.zhaojm.basal.concurrent.runnable;
 
 public class Printer implements Runnable {
 

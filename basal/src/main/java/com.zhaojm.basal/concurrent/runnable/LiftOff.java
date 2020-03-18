@@ -1,4 +1,4 @@
-package com.zhaojm.basal.concurrent;
+package com.zhaojm.basal.concurrent.runnable;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;

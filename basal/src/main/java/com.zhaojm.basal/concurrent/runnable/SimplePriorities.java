@@ -1,4 +1,4 @@
-package com.zhaojm.basal.concurrent;
+package com.zhaojm.basal.concurrent.runnable;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

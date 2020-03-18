@@ -1,14 +1,15 @@
 package com.zhaojm.basal.javaio;
 
 import java.io.*;
+import java.util.Arrays;
 
 public class StreamTest {
 
-    public static void main(String[] args) {
-        testRandomAccessStream();
+    public static void main(String[] args) throws Exception {
+        testFile();
     }
 
-    public static void testRandomAccessStream(){
+    private static void testRandomAccessStream() {
         try {
             FileInputStream fis = new FileInputStream(new File("E:\\study\\testfile\\test.txt"));
             FileOutputStream fos = new FileOutputStream(new File("E:\\study\\testfile\\testCopy.txt"));
@@ -24,6 +25,19 @@ public class StreamTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void testFile() throws Exception{
+        String fileName = "E:\\study\\testfile\\test.txt";
+        File file = new File(fileName);
+        System.out.println(file.getPath());
+        System.out.println(file.getName());
+        System.out.println(file.getParent());
+        // Arrays.stream(file.getParentFile().list()).forEach(System.out::println);
+        System.out.println(file.isAbsolute());
+        System.out.println(file.getCanonicalPath());
+        System.out.println(file.toURI().getPath());
+
     }
 
 }
