@@ -32,16 +32,19 @@ public class ThreadLocalVariableHolder {
     // 其中get() 方法将返回与其线程相关联的对象的副本，而set() 会将参数插入到为其线程存储的对象中，并返回原有对象
     private static  ThreadLocal<Integer> value = new ThreadLocal<Integer>(){
         private Random rand = new Random(47);
+        @Override
         protected synchronized Integer initialValue() {
             return rand.nextInt(1000);
         }
     };
 
     public static void increment() {
+        // set() 会将参数插入到为其线程存储的对象中， 并返回存储中原有的对象
         value.set(value.get() + 1);
     }
 
     public static int get() {
+        // get() 方法将返回与其线程相关联的对象副本
         return value.get();
     }
 
