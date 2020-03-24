@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 /**
  * We'll call our message publisher (sender) Send and our message consumer (receiver) Recv.
  * The publisher will connect to RabbitMQ, send a single message, then exit.
+ * 生产者
+ * 生产者将消息发送到队列，消费者从队列中获取消息。
+ * @author zhaojm
  */
 public class Send {
 
