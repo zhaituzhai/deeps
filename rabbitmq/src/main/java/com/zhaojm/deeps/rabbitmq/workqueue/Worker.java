@@ -86,6 +86,7 @@ public class Worker {
         channel.basicNack();
         channel.basicGet();
         */
+        // 同一时刻，服务器只会发一条消息给消费者
         channel.basicQos(1);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
