@@ -9,6 +9,8 @@
         <module>datastructure</module>
         <module>basal</module>
         <module>jdk8</module>
+        <module>mybatis-self</module>
+        <module>mybatis-self</module>
     </modules>
     <packaging>pom</packaging>
     <name>deeps</name>
