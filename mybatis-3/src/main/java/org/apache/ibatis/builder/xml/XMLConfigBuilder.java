@@ -90,7 +90,14 @@ public class XMLConfigBuilder extends BaseBuilder {
     this(new XPathParser(inputStream, true, props, new XMLMapperEntityResolver()), environment, props);
   }
 
+  /**
+   * 得到XPathParser实例之后，就调用另一个使用XPathParser作为配置来源的重载构造函数了
+   * @param parser
+   * @param environment
+   * @param props
+   */
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
+    // 调用了父类BaseBuilder的构造器（主要是设置类型别名注册器，以及类型处理器注册器）
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
     this.configuration.setVariables(props);
