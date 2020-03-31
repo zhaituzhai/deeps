@@ -89,6 +89,7 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   public void parse() {
     if (!configuration.isResourceLoaded(resource)) {
+      // 解析mapper的核心
       configurationElement(parser.evalNode("/mapper"));
       configuration.addLoadedResource(resource);
       bindMapperForNamespace();
@@ -103,6 +104,14 @@ public class XMLMapperBuilder extends BaseBuilder {
     return sqlFragments.get(refid);
   }
 
+  /**
+   * 解析mapper的核心
+   * 1、解析缓存参照cache-ref。参照缓存顾名思义，就是共用其他缓存的设置。
+   * 2、解析缓存cache
+   * 3、解析参数映射parameterMap
+   * 4、解析结果集映射resultMap
+   * @param context
+   */
   private void configurationElement(XNode context) {
     try {
       String namespace = context.getStringAttribute("namespace");
@@ -110,9 +119,13 @@ public class XMLMapperBuilder extends BaseBuilder {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
+      // 1、解析缓存参照cache-ref。参照缓存顾名思义，就是共用其他缓存的设置。
       cacheRefElement(context.evalNode("cache-ref"));
+      // 2、解析缓存cache
       cacheElement(context.evalNode("cache"));
+      // 3、解析参数映射parameterMap
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+      // 4、解析结果集映射resultMap
       resultMapElements(context.evalNodes("/mapper/resultMap"));
       sqlElement(context.evalNodes("/mapper/sql"));
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
@@ -184,6 +197,20 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 1、解析缓存参照cache-ref。参照缓存顾名思义，就是共用其他缓存的设置。
+   *
+   *    <cache-ref namespace=”com.someone.application.data.SomeMapper”/>
+   *
+   * 缓存参考因为通过namespace指向其他的缓存。
+   * 所以会出现第一次解析的时候指向的缓存还不存在的情况，所以需要在所有的mapper文件加载完成后进行二次处理，不仅仅是缓存参考，
+   * 其他的CRUD也一样。所以在XMLMapperBuilder.configuration中有很多的incompleteXXX，这种设计模式类似于JVM GC中的
+   * mark and sweep，标记、然后处理。
+   *
+   * 所以当捕获到IncompleteElementException异常时，没有终止执行，而是将指向的缓存不存在的cacheRefResolver添加到
+   * configuration.incompleteCacheRef中。
+   * @param context
+   */
   private void cacheRefElement(XNode context) {
     if (context != null) {
       configuration.addCacheRef(builderAssistant.getCurrentNamespace(), context.getStringAttribute("namespace"));
@@ -196,6 +223,24 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 默认情况下，mybatis使用的是永久缓存PerpetualCache，读取或设置各个属性默认值之后，调用builderAssistant.useNewCache构建缓存，
+   * 其中的CacheBuilder使用了build模式（在effective里面，建议有4个以上可选属性时，应该为对象提供一个builder便于使用），只要实
+   * 现org.apache.ibatis.cache.Cache接口，就是合法的mybatis缓存。
+   * 我们先来看下缓存的DTD定义：
+   *      <!ELEMENT cache (property*)>
+   *      <!ATTLIST cache
+   *      type CDATA #IMPLIED
+   *      eviction CDATA #IMPLIED
+   *      flushInterval CDATA #IMPLIED
+   *      size CDATA #IMPLIED
+   *      readOnly CDATA #IMPLIED
+   *      blocking CDATA #IMPLIED >
+   * 所以，最简单的情况下只要声明就可以启用当前mapper下的缓存。
+   *
+   * @param context
+   * @throws Exception
+   */
   private void cacheElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type", "PERPETUAL");
@@ -211,6 +256,28 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 3、解析参数映射parameterMap
+   *      <!ELEMENT parameterMap (parameter+)?>
+   *      <!ATTLIST parameterMap
+   *      id CDATA #REQUIRED
+   *      type CDATA #REQUIRED
+   *      >
+   *
+   *      <!ELEMENT parameter EMPTY>
+   *      <!ATTLIST parameter
+   *      property CDATA #REQUIRED
+   *      javaType CDATA #IMPLIED
+   *      jdbcType CDATA #IMPLIED
+   *      mode (IN | OUT | INOUT) #IMPLIED
+   *      resultMap CDATA #IMPLIED
+   *      scale CDATA #IMPLIED
+   *      typeHandler CDATA #IMPLIED
+   *      >
+   * 总体来说，目前已经不推荐使用参数映射，而是直接使用内联参数。
+   * @param list
+   * @throws Exception
+   */
   private void parameterMapElement(List<XNode> list) throws Exception {
     for (XNode parameterMapNode : list) {
       String id = parameterMapNode.getStringAttribute("id");
@@ -238,6 +305,15 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 4、解析结果集映射resultMap
+   * 结果集映射早期版本可以说是用的最多的辅助节点了，不过有了mapUnderscoreToCamelCase属性之后，如果命名规范控制做的好的话，resultMap也是可以省略的。
+   * 每个mapper文件可以有多个结果集映射。最终来说，它还是使用频率很高的。
+   * 我们先来看下DTD定义： mybatis-3-config.dtd
+   *
+   * @param list
+   * @throws Exception
+   */
   private void resultMapElements(List<XNode> list) throws Exception {
     for (XNode resultMapNode : list) {
       try {
@@ -269,8 +345,10 @@ public class XMLMapperBuilder extends BaseBuilder {
     List<XNode> resultChildren = resultMapNode.getChildren();
     for (XNode resultChild : resultChildren) {
       if ("constructor".equals(resultChild.getName())) {
+        // 构造器
         processConstructorElement(resultChild, typeClass, resultMappings);
       } else if ("discriminator".equals(resultChild.getName())) {
+        // 鉴别器discriminator的解析
         discriminator = processDiscriminatorElement(resultChild, typeClass, resultMappings);
       } else {
         List<ResultFlag> flags = new ArrayList<ResultFlag>();
@@ -289,6 +367,28 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 构造器主要用于没有默认构造器或者有多个构造器的情况
+   *
+   * public class User {
+   *    //...
+   *    public User(Integer id, String username, int age) {
+   *      //...
+   *   }
+   * //...
+   * }
+   *
+   * <constructor>
+   *    <idArg column="id" javaType="int"/>
+   *    <arg column="username" javaType="String"/>
+   *    <arg column="age" javaType="_int"/>
+   * </constructor>
+   *
+   * @param resultChild
+   * @param resultType
+   * @param resultMappings
+   * @throws Exception
+   */
   private void processConstructorElement(XNode resultChild, Class<?> resultType, List<ResultMapping> resultMappings) throws Exception {
     List<XNode> argChildren = resultChild.getChildren();
     for (XNode argChild : argChildren) {
@@ -297,10 +397,36 @@ public class XMLMapperBuilder extends BaseBuilder {
       if ("idArg".equals(argChild.getName())) {
         flags.add(ResultFlag.ID);
       }
+      // 最后调用buildResultMappingFromContext建立具体的resultMap。
       resultMappings.add(buildResultMappingFromContext(argChild, resultType, flags));
     }
   }
 
+  /**
+   * 鉴别器非常容易理解,它的表现很像Java语言中的switch语句。
+   * 定义鉴别器也是通过column和javaType属性来唯一标识，
+   *      column是用来确定某个字段是否为鉴别器，
+   *      JavaType是需要被用来保证等价测试的合适类型。
+   * 例如：
+   *
+   *  <discriminator javaType="int" column="vehicle_type">
+   *     <case value="1" resultMap="carResult"/>
+   *     <case value="2" resultMap="truckResult"/>
+   *     <case value="3" resultMap="vanResult"/>
+   *     <case value="4" resultMap="suvResult"/>
+   *   </discriminator>
+   *
+   * 对于上述的鉴别器，如果 vehicle_type=1, 那就会使用下列这个结果映射。
+   * <resultMap id="carResult" type="Car">
+   *   <result property="doorCount" column="door_count" />
+   * </resultMap>
+   *
+   * @param context
+   * @param resultType
+   * @param resultMappings
+   * @return
+   * @throws Exception
+   */
   private Discriminator processDiscriminatorElement(XNode context, Class<?> resultType, List<ResultMapping> resultMappings) throws Exception {
     String column = context.getStringAttribute("column");
     String javaType = context.getStringAttribute("javaType");
@@ -357,6 +483,14 @@ public class XMLMapperBuilder extends BaseBuilder {
     return true;
   }
 
+  /**
+   * buildResultMappingFromContext是个公共工具方法，会被反复使用，我们来看下它的具体实现（不是所有元素都包含所有属性）；
+   * @param context
+   * @param resultType
+   * @param flags
+   * @return
+   * @throws Exception
+   */
   private ResultMapping buildResultMappingFromContext(XNode context, Class<?> resultType, List<ResultFlag> flags) throws Exception {
     String property;
     if (flags.contains(ResultFlag.CONSTRUCTOR)) {
@@ -368,6 +502,9 @@ public class XMLMapperBuilder extends BaseBuilder {
     String javaType = context.getStringAttribute("javaType");
     String jdbcType = context.getStringAttribute("jdbcType");
     String nestedSelect = context.getStringAttribute("select");
+    // resultMap中可以包含association(一对一)或collection(一对多)复合类型,这些复合类型可以使用外部定义的公用resultMap
+    // 或者内嵌resultMap,所以这里的处理逻辑是如果有resultMap就获取resultMap,如果没有,那就动态生成一个。
+    // 如果自动生成的话，他的resultMap id通过调用XNode.getValueBasedIdentifier()来获得
     String nestedResultMap = context.getStringAttribute("resultMap",
         processNestedResultMappings(context, Collections.<ResultMapping> emptyList()));
     String notNullColumn = context.getStringAttribute("notNullColumn");
@@ -382,11 +519,34 @@ public class XMLMapperBuilder extends BaseBuilder {
     JdbcType jdbcTypeEnum = resolveJdbcType(jdbcType);
     return builderAssistant.buildResultMapping(resultType, property, column, javaTypeClass, jdbcTypeEnum, nestedSelect, nestedResultMap, notNullColumn, columnPrefix, typeHandlerClass, flags, resultSet, foreignColumn, lazy);
   }
-  
+
+  /**
+   * resultMap中可以包含association(一对一)或collection(一对多)复合类型,这些复合类型可以使用外部定义的公用resultMap
+   * 或者内嵌resultMap,所以这里的处理逻辑是如果有resultMap就获取resultMap,如果没有,那就动态生成一个。
+   * 如果自动生成的话，他的resultMap id通过调用XNode.getValueBasedIdentifier()来获得。
+   *
+   * 由于colletion和association、discriminator里面还可以包含复合类型，所以将进行递归解析直到所有的子元素都为基本列位置，
+   * 它在使用层面的目的在于将关系模型映射为对象树模型。
+   *
+   * <resultMap id="blogResult" type="Blog">
+   *   <id property="id" column="blog_id" />
+   *   <result property="title" column="blog_title"/>
+   *   <association property="author" column="blog_author_id" javaType="Author" resultMap="authorResult"/>
+   *   <collection property="posts" javaType="ArrayList" column="id" ofType="Post" select="selectPostsForBlog"/>
+   * </resultMap>
+   *
+   * 注意“ofType”属性，这个属性用来区分JavaBean(或字段)属性类型和集合中存储的对象类型。
+   *
+   * @param context
+   * @param resultMappings
+   * @return
+   * @throws Exception
+   */
   private String processNestedResultMappings(XNode context, List<ResultMapping> resultMappings) throws Exception {
     if ("association".equals(context.getName())
         || "collection".equals(context.getName())
         || "case".equals(context.getName())) {
+      // 对于其中的每个非select属性映射，调用resultMapElement进行递归解析。
       if (context.getStringAttribute("select") == null) {
         ResultMap resultMap = resultMapElement(context, resultMappings);
         return resultMap.getId();

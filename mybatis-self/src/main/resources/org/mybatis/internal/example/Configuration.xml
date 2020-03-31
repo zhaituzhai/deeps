@@ -13,7 +13,13 @@
             </dataSource>
         </environment>
     </environments>
+    <!--使用package自动搜索的模式，这样指定package下所有接口都会被注册为mapper-->
+    <!--<mappers>
+        <package name="org.mybatis.internal.example"/>
+    </mappers>-->
     <mappers>
         <mapper resource="org/mybatis/internal/example/UserMapper.xml"/>
+        <!--<mapper url="file:///org/mybatis/internal/example/UserMapper.xml"/>
+        <mapper class="org.mybatis.internal.example.mapper.UserMapper"/>-->
     </mappers>
 </configuration>
