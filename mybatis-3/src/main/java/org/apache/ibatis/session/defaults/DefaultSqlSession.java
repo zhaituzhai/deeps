@@ -15,15 +15,6 @@
  */
 package org.apache.ibatis.session.defaults;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.ExceptionFactory;
@@ -38,6 +29,11 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  *
@@ -84,6 +80,15 @@ public class DefaultSqlSession implements SqlSession {
     }
   }
 
+  /**
+   * 需要注意的是，这个selectMap并不等价于方法public List selectList，它返回的格式直接是Map，Key是查询记录的某个字段，
+   * 一般应该唯一，Value是查询记录本身，也就是Map<object.prop1,object>。
+   * @param statement Unique identifier matching the statement to use.
+   * @param mapKey The property to use as key for each value in the list.
+   * @param <K>
+   * @param <V>
+   * @return
+   */
   @Override
   public <K, V> Map<K, V> selectMap(String statement, String mapKey) {
     return this.selectMap(statement, null, mapKey, RowBounds.DEFAULT);
@@ -138,9 +143,19 @@ public class DefaultSqlSession implements SqlSession {
 
   @Override
   public <E> List<E> selectList(String statement, Object parameter) {
+    // 第三个参数是RowBounds.DEFAULT
     return this.selectList(statement, parameter, RowBounds.DEFAULT);
   }
 
+  /**
+   * 首先使用应用调用方传递的语句id判断configuration.mappedStatements里面是否有这个语句，如果没有将会抛出IllegalArgumentException异常，
+   * 执行结束。否则将获取到的映射语句对象连同其他参数一起将具体实现委托给执行器Executor的query方法。
+   * @param statement Unique identifier matching the statement to use.
+   * @param parameter A parameter object to pass to the statement.
+   * @param rowBounds  Bounds to limit object retrieval
+   * @param <E>
+   * @return
+   */
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {

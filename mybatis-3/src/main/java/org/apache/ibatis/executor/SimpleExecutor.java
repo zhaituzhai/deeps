@@ -53,13 +53,30 @@ public class SimpleExecutor extends BaseExecutor {
     }
   }
 
+  /**
+   * 内部调用PreparedStatement完成具体查询后，将ps的结果集传递给对应的结果处理器进行处理。
+   * 查询结果的映射是mybatis作为ORM框架提供的最有价值的功能，同时也可以说是最复杂的逻辑之一。
+   * @param ms
+   * @param parameter
+   * @param rowBounds
+   * @param resultHandler
+   * @param boundSql
+   * @param <E>
+   * @return
+   * @throws SQLException
+   */
   @Override
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      // 根据上下文参数和具体的执行器new一个StatementHandler, 其中包含了所有必要的信息,比如结果处理器、参数处理器、执行器等等,
+      // 主要有三种类型的语句处理器UNPREPARE、PREPARE、CALLABLE。默认是PREPARE类型，通过mapper语句上的statementType属性进行
+      // 设置,一般除了存储过程外不应该设置
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+      // 这一步是真正和JDBC打交道
       stmt = prepareStatement(handler, ms.getStatementLog());
+      // 创建了Statement具体实现的实例后，调用SimpleExecutor.query进行具体的查询
       return handler.<E>query(stmt, resultHandler);
     } finally {
       closeStatement(stmt);
@@ -81,8 +98,11 @@ public class SimpleExecutor extends BaseExecutor {
 
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    // 获取JDBC连接
     Connection connection = getConnection(statementLog);
+    // 调用语句处理器的prepare方法
     stmt = handler.prepare(connection, transaction.getTimeout());
+    // 设置参数
     handler.parameterize(stmt);
     return stmt;
   }

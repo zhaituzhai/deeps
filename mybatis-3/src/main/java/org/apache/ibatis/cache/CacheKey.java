@@ -15,11 +15,11 @@
  */
 package org.apache.ibatis.cache;
 
+import org.apache.ibatis.reflection.ArrayUtil;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.ibatis.reflection.ArrayUtil;
 
 /**
  * @author Clinton Begin
@@ -57,6 +57,7 @@ public class CacheKey implements Cloneable, Serializable {
   }
 
   public void update(Object object) {
+    // ArrayUtil提供了可以计算包括数组的对象的hashCode, toString, equals方法
     int baseHashCode = object == null ? 1 : ArrayUtil.hashCode(object); 
 
     count++;

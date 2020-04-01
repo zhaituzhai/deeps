@@ -15,14 +15,13 @@
  */
 package org.apache.ibatis.transaction.jdbc;
 
-import java.sql.Connection;
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
 import org.apache.ibatis.session.TransactionIsolationLevel;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.TransactionFactory;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.util.Properties;
 
 /**
  * Creates {@link JdbcTransaction} instances.
@@ -42,6 +41,13 @@ public class JdbcTransactionFactory implements TransactionFactory {
     return new JdbcTransaction(conn);
   }
 
+  /**
+   * newTransaction的实现逻辑很简单，但是此时返回的事务不一定是有底层连接的。
+   * @param ds
+   * @param level Desired isolation level
+   * @param autoCommit Desired autocommit
+   * @return
+   */
   @Override
   public Transaction newTransaction(DataSource ds, TransactionIsolationLevel level, boolean autoCommit) {
     return new JdbcTransaction(ds, level, autoCommit);
