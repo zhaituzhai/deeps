@@ -21,11 +21,18 @@ import java.util.Map;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 每个鉴别器节点都表示为一个Discriminator
  * @author Clinton Begin
  */
 public class Discriminator {
 
+  /**
+   * 所属的属性节点<result>
+   */
   private ResultMapping resultMapping;
+  /**
+   * 内部的if then映射
+   */
   private Map<String, String> discriminatorMap;
 
   Discriminator() {

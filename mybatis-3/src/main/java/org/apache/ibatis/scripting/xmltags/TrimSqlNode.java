@@ -32,7 +32,13 @@ public class TrimSqlNode implements SqlNode {
   private final SqlNode contents;
   private final String prefix;
   private final String suffix;
+  /**
+   * 要trim多个文本的话, | 分隔即可
+   */
   private final List<String> prefixesToOverride;
+  /**
+   * 要trim多个文本的话, | 分隔即可
+   */
   private final List<String> suffixesToOverride;
   private final Configuration configuration;
 
@@ -51,8 +57,10 @@ public class TrimSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
+    // trim 节点只有在至少有一个子节点不为空的时候才有意义
     FilteredDynamicContext filteredDynamicContext = new FilteredDynamicContext(context);
     boolean result = contents.apply(filteredDynamicContext);
+    // 所有子节点处理完成之后,filteredDynamicContext.delegate里面就包含解析后的静态SQL文本了，此时就可以处理前后的trim了
     filteredDynamicContext.applyAll();
     return result;
   }
@@ -118,6 +126,11 @@ public class TrimSqlNode implements SqlNode {
       return delegate.getSql();
     }
 
+    /**
+     * 处理前缀
+     * @param sql
+     * @param trimmedUppercaseSql
+     */
     private void applyPrefix(StringBuilder sql, String trimmedUppercaseSql) {
       if (!prefixApplied) {
         prefixApplied = true;
@@ -136,6 +149,11 @@ public class TrimSqlNode implements SqlNode {
       }
     }
 
+    /**
+     * 处理后缀
+     * @param sql
+     * @param trimmedUppercaseSql
+     */
     private void applySuffix(StringBuilder sql, String trimmedUppercaseSql) {
       if (!suffixApplied) {
         suffixApplied = true;

@@ -39,6 +39,13 @@ public class SqlSourceBuilder extends BaseBuilder {
     super(configuration);
   }
 
+  /**
+   * 其中参数的具体解析在ParameterMappingTokenHandler.buildParameterMapping()中
+   * @param originalSql
+   * @param parameterType
+   * @param additionalParameters
+   * @return
+   */
   public SqlSource parse(String originalSql, Class<?> parameterType, Map<String, Object> additionalParameters) {
     ParameterMappingTokenHandler handler = new ParameterMappingTokenHandler(configuration, parameterType, additionalParameters);
     GenericTokenParser parser = new GenericTokenParser("#{", "}", handler);
@@ -68,6 +75,25 @@ public class SqlSourceBuilder extends BaseBuilder {
       return "?";
     }
 
+    /**
+     * 其总体逻辑还是比较简单的，唯一值得注意的是，只不过在这里可以看出每个参数被绑定的javaType获取的优先级分别为：
+     * #{}中明确指定的，调用parse时传递的map(metaParameters)中包含的(这主要用于动态SQL的场景)，调用parse时传递
+     * 的参数类型(如果该类型已经在typeHandlerRegistry中的话)，
+     * 参数指定的jdbcType类型为JdbcType.CURSOR，Object.class(如果该类型是Map的子类或者参数本身为null)，
+     * 参数包含在调用parse时传递的参数类型对象的字段中，最后是Object.class。
+     *
+     * 最后构建出ParameterMapping
+     *
+     * RawSqlSource rawSqlSource = new RawSqlSource(conf, "SELECT * FROM PERSON WHERE ID = #{id}", int.class);
+     *
+     * 将返回
+     * sql语句：SELECT * FROM PERSON WHERE ID = ?
+     * 以及参数列表：[ParameterMapping{property='id', mode=IN, javaType=int, jdbcType=null, numericScale=null, resultMapId='null', jdbcTypeName='null', expression='null'}]
+     *
+     * 到此为止，静态SQL的解析就完成了。
+     * @param content
+     * @return
+     */
     private ParameterMapping buildParameterMapping(String content) {
       Map<String, String> propertiesMap = parseParameterMapping(content);
       String property = propertiesMap.get("property");

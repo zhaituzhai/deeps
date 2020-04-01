@@ -22,6 +22,7 @@ import org.apache.ibatis.reflection.factory.ObjectFactory;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * 对象反射信息的facade模式
  * @author Clinton Begin
  */
 public interface ObjectWrapper {

@@ -19,7 +19,13 @@ package org.apache.ibatis.scripting.xmltags;
  * @author Clinton Begin
  */
 public class IfSqlNode implements SqlNode {
+  /**
+   * 表达式执行器
+   */
   private final ExpressionEvaluator evaluator;
+  /**
+   * 条件表达式
+   */
   private final String test;
   private final SqlNode contents;
 

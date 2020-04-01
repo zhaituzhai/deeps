@@ -29,6 +29,10 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 对于每个语句而言，在运行时都需要知道结果映射，是否使用缓存，语句类型，sql文本，超时时间，是否自动生成key等等。
+ * 为了方便运行时的使用以及高效率，MappedStatement被设计为直接包含了所有这些属性。
+ *
+ * 唯一值得注意的是resultMaps被设计为只读,这样应用可以查看但是不能修改。
  * @author Clinton Begin
  */
 public final class MappedStatement {

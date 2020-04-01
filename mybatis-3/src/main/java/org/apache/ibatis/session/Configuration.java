@@ -754,9 +754,16 @@ public class Configuration {
     return caches.containsKey(id);
   }
 
+  /**
+   * 应该来说，设置resultMap的鉴别器有没有嵌套的resultMap在解析resultMap子元素的时候就可以设置，
+   * 当然放在最后统一处理也未尝不可，也不见得放在这里就一定更加清晰，只能说实现的方式有多种。
+   * @param rm
+   */
   public void addResultMap(ResultMap rm) {
     resultMaps.put(rm.getId(), rm);
+    // 检查本resultMap内的鉴别器有没有嵌套resultMap
     checkLocallyForDiscriminatedNestedResultMaps(rm);
+    // 检查所有resultMap的鉴别器有没有嵌套resultMap
     checkGloballyForDiscriminatedNestedResultMaps(rm);
   }
 

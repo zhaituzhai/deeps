@@ -2,6 +2,15 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <setting name="defaultScriptingLanguage" value="myLanguage"/>
+    </settings>
+    <typeHandlers>
+        <typeHandler javaType="org.mybatis.internal.example.pojo.Mobile" jdbcType="VARCHAR" handler="org.mybatis.internal.example.type.MobileTypeHandler" />
+    </typeHandlers>
+    <objectFactory type="org.mybatis.internal.example.type.CustomObjectFactory"/>
+    <objectWrapperFactory type="org.mybatis.internal.example.type.CustomWrapperFactory"/>
     <environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"/>

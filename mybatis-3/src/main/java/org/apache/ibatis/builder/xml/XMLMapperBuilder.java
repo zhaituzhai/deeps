@@ -127,13 +127,20 @@ public class XMLMapperBuilder extends BaseBuilder {
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
       // 4、解析结果集映射resultMap
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      // 5、解析sql片段
       sqlElement(context.evalNodes("/mapper/sql"));
+      // 6、解析CRUD语句
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
     }
   }
 
+  /**
+   * crud的解析从buildStatementFromContext(context.evalNodes(“select|insert|update|delete”));
+   * 语句开始，透过调用调用链，我们可以得知SQL语句的解析主要在XMLStatementBuilder中实现。
+   * @param list
+   */
   private void buildStatementFromContext(List<XNode> list) {
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
@@ -358,6 +365,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         resultMappings.add(buildResultMappingFromContext(resultChild, typeClass, flags));
       }
     }
+    // 最后所有的子节点都被解析到resultMappings中， 在解析完整个resultMap中的所有子元素之后，调用ResultMapResolver进行解析
     ResultMapResolver resultMapResolver = new ResultMapResolver(builderAssistant, id, typeClass, extend, discriminator, resultMappings, autoMapping);
     try {
       return resultMapResolver.resolve();
@@ -445,6 +453,19 @@ public class XMLMapperBuilder extends BaseBuilder {
     return builderAssistant.buildDiscriminator(resultType, column, javaTypeClass, jdbcTypeEnum, typeHandlerClass, discriminatorMap);
   }
 
+  /**
+   * 5、解析sql片段
+   *
+   *    <sql id=”userColumns”> id,username,password </sql>
+   *
+   * mybatis可以根据不同的数据库执行不同的sql，这就是通过sql元素上的databaseId属性来区别的。
+   * 同样，首先设置sql元素的id，它必须是当前mapper文件所定义的命名空间。
+   * sql元素本身的处理很简单，只是简单的过滤出databaseId和当前加载的配置文件相同的语句以备以后再解析crud遇到时进行引用。
+   * 之所以不进行解析，是因为首先能够作为sql元素子元素的所有节点都可以作为crud的子元素，而且sql元素不会在运行时单独使用，
+   * 所以也没有必要专门解析一番。下面我们重点来看crud的解析与内部表示。
+   * @param list
+   * @throws Exception
+   */
   private void sqlElement(List<XNode> list) throws Exception {
     if (configuration.getDatabaseId() != null) {
       sqlElement(list, configuration.getDatabaseId());

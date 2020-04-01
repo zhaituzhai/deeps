@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * SetSqlNode直接委托给TrimSqlNode处理。参见TrimSqlNode。
  * @author Clinton Begin
  */
 public class SetSqlNode extends TrimSqlNode {

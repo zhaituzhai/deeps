@@ -40,12 +40,27 @@ public class RawSqlSource implements SqlSource {
     this(configuration, getSql(configuration, rootSqlNode), parameterType);
   }
 
+  /**
+   * 随后调用第二个构造器，
+   * 首先创建一个SqlSourceBuilder实例，然后调用其parse()方法，其中ParameterMappingTokenHandler符号处理器的目
+   * 的是把sql参数解析出来，
+   * @param configuration
+   * @param sql
+   * @param parameterType
+   */
   public RawSqlSource(Configuration configuration, String sql, Class<?> parameterType) {
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> clazz = parameterType == null ? Object.class : parameterType;
     sqlSource = sqlSourceParser.parse(sql, clazz, new HashMap<String, Object>());
   }
 
+  /**
+   * 其中的关键之处在getSql()方法的逻辑实现，因为给DynamicContext()构造器传递的parameterObject为空,所以没有参数，
+   * 也不需要反射，反之就通过反射将object转为map。因为rootSqlNode是StaticTextSqlNode类型，所以getSql就直接返回原文本
+   * @param configuration
+   * @param rootSqlNode
+   * @return
+   */
   private static String getSql(Configuration configuration, SqlNode rootSqlNode) {
     DynamicContext context = new DynamicContext(configuration, null);
     rootSqlNode.apply(context);

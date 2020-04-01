@@ -21,6 +21,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * 当MyBatis将一个Java对象作为输入/输出参数执行 CRUD语句操作时，它会创建一个PreparedStatement对象，
+ * 并且调用setXXX()为占位符设置相应的参数值。XXX可以是Int，String，Date等Java内置类型，或者用户自定义的类型。
+ * 在实现上，MyBatis是通过使用类型处理器（type handler）来确定XXX是具体什么类型的。MyBatis对于下列类型使用内建的
+ * 类型处理器：
+ * 所有的基本数据类型、基本类型的包裹类型、byte[] 、{@link java.util.Date}、{@link java.sql.Date}、
+ * {@link java.sql.Time}、{@link java.sql.Timestamp} java 枚举类型等。
+ *
+ * 对于用户自定义的类型，我们可以创建一个自定义的类型处理器。要创建自定义类型处理器，只要实现TypeHandler接口即可，
+ *
+ * TypeHandler接口的定义
  * @author Clinton Begin
  */
 public interface TypeHandler<T> {

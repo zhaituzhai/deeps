@@ -35,10 +35,42 @@ import org.apache.ibatis.session.Configuration;
  */
 public class BoundSql {
 
+  /**
+   * sql文本
+   */
   private final String sql;
+  /**
+   * 静态参数说明
+   */
   private final List<ParameterMapping> parameterMappings;
+  /**
+   * 运行时参数对象
+   */
   private final Object parameterObject;
+  /**
+   * 额外参数主要是维护一些在加载时无法确定的参数，比如标签中的参数在加载时就无法尽最大努力确定，必须通过运行时
+   * 执行{@link org.apache.ibatis.scripting.xmltags.DynamicSqlSource#getBoundSql(Object)} ()}
+   * 中的 SqlNode.apply() 才能确定真正要执行的SQL语句，以及额外参数。
+   *
+   * 比如，对于下列的foreach语句，它的AdditionalParameter内容为：
+   * {frch_index_0=0, item=2, frch_index_1=1, _parameter=org.mybatis.internal.example.pojo.UserReq@5ccddd20, index=1, frch_item_1=2, _databaseId=null, frch_item_0=1}
+   * 其中_parameter和_databaseId在DynamicContext构造器中硬编码，其他值通过调用ForEachSqlNode.apply()计算得到。
+   * 与此相对应，此时SQL语句在应用ForeachSqlNode之后，对参数名也进行重写，
+   *  select lfPartyId,author as authors,subject,comments,title,partyName
+   *      from LfParty where partyName = #{partyName}
+   *         AND partyName like #{partyName}
+   *         and lfPartyId in
+   *          (
+   *         #{__frch_item_0.prop}
+   *          ,
+   *         #{__frch_item_1}
+   *          )
+   * 然后通过SqlSourceBuilder.parse()调用ParameterMappingTokenHandler计算出该sql的ParameterMapping列表，最后构造出StaticSqlSource。
+   */
   private final Map<String, Object> additionalParameters;
+  /**
+   * 额外参数的facade模式包装
+   */
   private final MetaObject metaParameters;
 
   public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {
