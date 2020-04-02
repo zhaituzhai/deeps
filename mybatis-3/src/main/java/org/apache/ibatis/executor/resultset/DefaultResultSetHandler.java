@@ -974,7 +974,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   //
 
   /**
-   * 嵌套resultmap的处理
+   * 嵌套resultmap的处理  collection / association
    * @param rsw
    * @param resultMap
    * @param resultHandler

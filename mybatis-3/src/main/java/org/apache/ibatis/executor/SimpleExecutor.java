@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * 这个执行器类型不做特殊的事情。它为每个语句的每次执行创建一个新的预处理语句。
  * @author Clinton Begin
  */
 public class SimpleExecutor extends BaseExecutor {
@@ -40,6 +41,17 @@ public class SimpleExecutor extends BaseExecutor {
     super(configuration, transaction);
   }
 
+  /**
+   * 其中的逻辑可以发现，和selectList的实现非常相似，先创建语句处理器，然后创建Statement实例，最后调用语句处理的update，
+   * 语句处理器里面调用jdbc对应update的方法execute()。
+   * 和selectList的不同之处在于：
+   *    1、在创建语句处理器期间，会根据需要调用 KeyGenerator.processBefore 生成前置 id；
+   *    2、在执行完成execute()方法后，会根据需要调用 KeyGenerator.processAfter 生成后置 id；
+   * @param ms
+   * @param parameter
+   * @return
+   * @throws SQLException
+   */
   @Override
   public int doUpdate(MappedStatement ms, Object parameter) throws SQLException {
     Statement stmt = null;
@@ -49,6 +61,7 @@ public class SimpleExecutor extends BaseExecutor {
       stmt = prepareStatement(handler, ms.getStatementLog());
       return handler.update(stmt);
     } finally {
+      // 每执行一次关闭
       closeStatement(stmt);
     }
   }

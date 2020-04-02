@@ -23,6 +23,7 @@ import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheException;
 
 /**
+ * 缓存的基本实现，内部采用原始HashMap实现。
  * @author Clinton Begin
  */
 public class PerpetualCache implements Cache {

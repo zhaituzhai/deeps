@@ -36,6 +36,22 @@ import java.util.concurrent.locks.ReadWriteLock;
  * }
  * </pre>
  *
+ * mybatis提供了基本实现org.apache.ibatis.cache.impl.PerpetualCache，内部采用原始HashMap实现。
+ * 第二个需要知道的方面是mybatis有一级缓存和二级缓存。
+ *    一级缓存是SqlSession级别的缓存，不同SqlSession之间的缓存数据区域（HashMap）是互相不影响，MyBatis默认支持一级缓存，
+ *    不需要任何的配置，默认情况下(一级缓存的有效范围可通过参数localCacheScope参数修改，取值为 SESSION 或者 STATEMENT )，
+ *    在一个 SqlSession 的查询期间，只要没有发生 commit/rollback 或者调用 close() 方法，那么 mybatis 就会先根据当前执行语句
+ *    的 CacheKey 到一级缓存中查找，如果找到了就直接返回，不到数据库中执行。
+ *
+ * 对于一级缓存，commit/rollback都会清空一级缓存。
+ * 对于二级缓存，DML操作或者显示设置语句层面的flushCache属性都会使得二级缓存失效。
+ * 　　在二级缓存容器的具体回收策略实现上，有下列几种：
+ *      LRU – 最近最少使用的：移除最长时间不被使用的对象，也是默认的选项，其实现类是{@link org.apache.ibatis.cache.decorators.LruCache}。
+ *      FIFO – 先进先出：按对象进入缓存的顺序来移除它们，其实现类是{@link org.apache.ibatis.cache.decorators.FifoCache}。
+ *      SOFT – 软引用：移除基于垃圾回收器状态和软引用规则的对象，其实现类是{@link org.apache.ibatis.cache.decorators.SoftCache}。
+ *      WEAK – 弱引用：更积极地移除基于垃圾收集器状态和弱引用规则的对象，其实现类是{@link org.apache.ibatis.cache.decorators.WeakCache}。
+ * 　　   在缓存的设计上，Mybatis的所有Cache算法都是基于装饰器/Composite模式对PerpetualCache扩展增加功能。
+ *
  * @author Clinton Begin
  */
 

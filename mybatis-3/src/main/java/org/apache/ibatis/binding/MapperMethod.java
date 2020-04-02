@@ -50,6 +50,15 @@ public class MapperMethod {
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   * CRUD 处理
+   * 对非查询类SQL，首先将请求参数转换为mybatis内部的格式，然后调用sqlSession实例对应的方法，这就和第一种方式的SQL逻辑一样的。
+   * 对于查询类SQL，根据返回类型是void/many/map/one/cursor分别调用不同的实现入口，但主体逻辑都类似，
+   *      除少数特别处理外，都是调用sqlSession.selectXXX
+   * @param sqlSession
+   * @param args
+   * @return
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
@@ -83,6 +92,7 @@ public class MapperMethod {
           result = sqlSession.selectOne(command.getName(), param);
         }
         break;
+      // 主要用于BatchExecutor和CacheExecutor的场景,SimpleExecutor模式不适用
       case FLUSH:
         result = sqlSession.flushStatements();
         break;

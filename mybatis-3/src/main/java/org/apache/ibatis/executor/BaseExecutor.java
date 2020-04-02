@@ -41,6 +41,23 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import static org.apache.ibatis.executor.ExecutionPlaceholder.EXECUTION_PLACEHOLDER;
 
 /**
+ * 非缓存执行器又分为三种，这三种类型的执行器都基于基础执行器BaseExecutor，基础执行器完成了大部分的公共功能
+ *
+ * 1、执行器在特定的事务上下文下执行；
+ * 2、具有本地缓存和本地出参缓存（任何时候，只要事务提交或者回滚或者执行update或者查询时设定了刷新缓存，都会清空本地缓存和本地出参缓存）；
+ * 3、具有延迟加载任务；
+ *
+ * BaseExecutor实现了大部分通用功能本地缓存管理、事务提交、回滚、超时设置、延迟加载等，但是将下列4个方法留给了具体的子类实现：
+ *
+ * 从功能上来说，这三种执行器的差别在于：
+ *
+ * ExecutorType.SIMPLE：这个执行器类型不做特殊的事情。它为每个语句的每次执行创建一个新的预处理语句。
+ * ExecutorType.REUSE：这个执行器类型会复用预处理语句。
+ * ExecutorType.BATCH：这个执行器会批量执行所有更新语句，也就是 jdbc addBatch API 的 facade 模式。
+ *
+ * 所以这三种类型的执行器可以说时应用于不同的负载场景下，除了SIMPLE类型外，另外两种要求对系统有较好的架构设计，
+ * 当然也提供了更多的回报。
+ *
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {
@@ -51,11 +68,20 @@ public abstract class BaseExecutor implements Executor {
   protected Executor wrapper;
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  /**
+   * mybatis的二级缓存 PerpetualCache实际上内部使用的是常规的Map
+   */
   protected PerpetualCache localCache;
+  /**
+   * 用于存储过程出参
+   */
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
 
   protected int queryStack;
+  /**
+   * transaction的底层连接是否已经释放
+   */
   private boolean closed;
 
   protected BaseExecutor(Configuration configuration, Transaction transaction) {
@@ -76,6 +102,10 @@ public abstract class BaseExecutor implements Executor {
     return transaction;
   }
 
+  /**
+   * 关闭本执行器相关的transaction
+   * @param forceRollback
+   */
   @Override
   public void close(boolean forceRollback) {
     try {
@@ -103,13 +133,24 @@ public abstract class BaseExecutor implements Executor {
     return closed;
   }
 
+  /**
+   * 更新操作
+   * 首先设置了字段dirty=true(dirty主要用在非自动提交模式下，用于判断是否需要提交或回滚，在强行提交模式下，如果dirty=true，
+   * 则需要提交或者回滚，代表可能有pending的事务)，然后调用执行器实例的update()方法
+   * @param ms
+   * @param parameter
+   * @return
+   * @throws SQLException
+   */
   @Override
   public int update(MappedStatement ms, Object parameter) throws SQLException {
     ErrorContext.instance().resource(ms.getResource()).activity("executing an update").object(ms.getId());
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 清空本地缓存, 与本地出参缓存
     clearLocalCache();
+    // 调用具体执行器实现的doUpdate方法
     return doUpdate(ms, parameter);
   }
 
@@ -135,6 +176,23 @@ public abstract class BaseExecutor implements Executor {
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
  }
 
+  /**
+   * 一级缓存是SqlSession级别的缓存，不同SqlSession之间的缓存数据区域（HashMap）是互相不影响，MyBatis默认支持一级缓存，
+   *    不需要任何的配置，默认情况下(一级缓存的有效范围可通过参数localCacheScope参数修改，取值为SESSION或者STATEMENT)，在
+   *    一个SqlSession的查询期间，只要没有发生commit/rollback或者调用close()方法，那么mybatis就会先根据当前执行语句的
+   *    CacheKey到一级缓存中查找，如果找到了就直接返回，不到数据库中执行。
+   * 二级缓存是mapper级别的缓存，多个SqlSession去操作同一个mapper的sql语句，多个SqlSession可以共用二级缓存，二级缓存是跨SqlSession。
+   *    二级缓存默认不启用，需要通过在Mapper中明确设置cache，它的实现在CachingExecutor的query()方法中，如下所示：
+   * @param ms
+   * @param parameter
+   * @param rowBounds
+   * @param resultHandler
+   * @param key
+   * @param boundSql
+   * @param <E>
+   * @return
+   * @throws SQLException
+   */
   @SuppressWarnings("unchecked")
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
@@ -150,6 +208,7 @@ public abstract class BaseExecutor implements Executor {
     try {
       queryStack++;
       // 如果查询不需要应用结果处理器,则先从缓存获取,这样可以避免数据库查询。我们后面会分析到localCache是什么时候被设置进去的
+      // 如果在一级缓存中就直接获取
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
@@ -168,6 +227,7 @@ public abstract class BaseExecutor implements Executor {
       deferredLoads.clear();
       if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
         // issue #482
+        // 如果设置了一级缓存是STATEMENT级别而非默认的SESSION级别，一级缓存就去掉了
         clearLocalCache();
       }
     }

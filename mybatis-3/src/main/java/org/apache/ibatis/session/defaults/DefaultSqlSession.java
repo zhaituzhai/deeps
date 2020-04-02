@@ -81,8 +81,8 @@ public class DefaultSqlSession implements SqlSession {
   }
 
   /**
-   * 需要注意的是，这个selectMap并不等价于方法public List selectList，它返回的格式直接是Map，Key是查询记录的某个字段，
-   * 一般应该唯一，Value是查询记录本身，也就是Map<object.prop1,object>。
+   * 需要注意的是，这个 selectMap 并不等价于方法 public List selectList ，它返回的格式直接是 Map，Key 是查询记录的某个字段，
+   * 一般应该唯一，Value 是查询记录本身，也就是 Map<object.prop1,object>。
    * @param statement Unique identifier matching the statement to use.
    * @param mapKey The property to use as key for each value in the list.
    * @param <K>
@@ -99,6 +99,18 @@ public class DefaultSqlSession implements SqlSession {
     return this.selectMap(statement, parameter, mapKey, RowBounds.DEFAULT);
   }
 
+  /**
+   * 从方法签名上，我们可以看到，和selectList不同，selectMap多了一个参数 mapKey，mapKey 就是用来指定返回类型中作为 key 的
+   * 那个字段名，具体的核心逻辑委托给了selectList方法，只是在返回结果后，mapResultHandler进行了二次处理。
+   * DefaultMapResultHandler是众多ResultHandler的实现之一。
+   * @param statement Unique identifier matching the statement to use.
+   * @param parameter A parameter object to pass to the statement.
+   * @param mapKey The property to use as key for each value in the list.
+   * @param rowBounds  Bounds to limit object retrieval
+   * @param <K>
+   * @param <V>
+   * @return
+   */
   @Override
   public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey, RowBounds rowBounds) {
     final List<? extends V> list = selectList(statement, parameter, rowBounds);
@@ -107,6 +119,7 @@ public class DefaultSqlSession implements SqlSession {
     final DefaultResultContext<V> context = new DefaultResultContext<V>();
     for (V o : list) {
       context.nextResultObject(o);
+      // DefaultMapResultHandler.handleResult()的功能就是把 List 转换为 Map<object.prop1,object>格式。
       mapResultHandler.handleResult(context);
     }
     return mapResultHandler.getMappedResults();
@@ -205,6 +218,12 @@ public class DefaultSqlSession implements SqlSession {
     return update(statement, null);
   }
 
+  /**
+   * insert,delete,update 都是用update
+   * @param statement Unique identifier matching the statement to execute.
+   * @param parameter A parameter object to pass to the statement.
+   * @return
+   */
   @Override
   public int update(String statement, Object parameter) {
     try {
@@ -302,6 +321,12 @@ public class DefaultSqlSession implements SqlSession {
     return configuration;
   }
 
+  /**
+   * DefaultSqlSession将具体创建Mapper实现的任务委托给了Configuration的getMapper泛型方法
+   * @param type Mapper interface class
+   * @param <T>
+   * @return
+   */
   @Override
   public <T> T getMapper(Class<T> type) {
     return configuration.<T>getMapper(type, this);
@@ -328,6 +353,18 @@ public class DefaultSqlSession implements SqlSession {
     cursorList.add(cursor);
   }
 
+  /**
+   * 只有非自动提交模式且执行过DML操作或者设置强制提交才会认为应该进行事务提交或者回滚操作。
+   * 对于不同的执行器，在提交和回滚执行的逻辑不一样，因为每个执行器在一级、二级、语句缓存上的差异：
+   *
+   * 对于简单执行器，除了清空一级缓存外，什么都不做；
+   * 对于REUSE执行器，关闭每个缓存的Statement以释放服务器端语句处理器，然后清空缓存的语句；
+   * 对于批量处理器，则执行每个批处理语句的executeBatch()方法以便真正执行语句，然后关闭Statement；
+   *
+   * 上述逻辑执行完成后，会执行提交/回滚操作。对于缓存执行器，在提交/回滚完成之后，会将TransactionCache中的entriesMissedInCache和entriesToAddOnCommit列表分别移动到语句对应的二级缓存中或清空掉。
+   * @param force
+   * @return
+   */
   private boolean isCommitOrRollbackRequired(boolean force) {
     return (!autoCommit && dirty) || force;
   }

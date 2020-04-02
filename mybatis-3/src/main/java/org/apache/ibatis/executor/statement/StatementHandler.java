@@ -26,6 +26,18 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.ResultHandler;
 
 /**
+ * 语句处理器 StatementHandler
+ * StatementHandler主要包括prepare语句、给语句设置参数、执行语句获取要执行的SQL语句本身。
+ * mybatis包含了三种类型的StatementHandler实现：
+ * {@link BaseStatementHandler}
+ *    {@link SimpleStatementHandler}
+ *    {@link PreparedStatementHandler}
+ *    {@link CallableStatementHandler}
+ * {@link RoutingStatementHandler}
+ *
+ * 分别用于JDBC对应的PrepareStatement,Statement以及CallableStatement。BaseStatementHandler是这三种类型
+ * 语句处理器的抽象父类，封装了一些实现细节比如设置超时时间、结果集每次提取大小等操作
+ *
  * @author Clinton Begin
  */
 public interface StatementHandler {

@@ -50,6 +50,13 @@ public class MapperProxyFactory<T> {
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
   }
 
+  /**
+   * MapperRegistry又将创建代理的任务委托给MapperProxyFactory，MapperProxyFactory首先为Mapper接口创建了一个实现
+   * 了InvocationHandler方法调用处理器接口的代理类MapperProxy，并实现invoke接口（其中为mapper各方法执行sql的具体逻辑），
+   * 最后才调用 JDK 的 java.lang.reflect.Proxy 为 Mapper 接口创建动态代理类并返回。
+   * @param sqlSession
+   * @return
+   */
   public T newInstance(SqlSession sqlSession) {
     final MapperProxy<T> mapperProxy = new MapperProxy<T>(sqlSession, mapperInterface, methodCache);
     return newInstance(mapperProxy);

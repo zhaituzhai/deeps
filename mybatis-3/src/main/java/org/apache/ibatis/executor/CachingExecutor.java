@@ -33,6 +33,15 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 缓存执行器相对于其他执行器的差别在于，首先是在query()方法中判断是否使用二级缓存(也就是mapper级别的缓存)。
+ * 虽然mybatis默认启用了CachingExecutor，但是如果在mapper层面没有明确设置二级缓存的话，就退化为SimpleExecutor了。
+ *
+ * 二级缓存的维护由TransactionalCache(事务化缓存)负责，当在TransactionalCacheManager(事务化缓存管理器)中调用
+ * putObject和removeObject方法的时候并不是马上就把对象存放到缓存或者从缓存中删除，而是先把这个对象放
+ * 到entriesToAddOnCommit和entriesToRemoveOnCommit这两个HashMap之中的一个里，然后当执行commit/rollback方法时
+ * 再真正地把对象存放到缓存或者从缓存中删除，具体可以参见TransactionalCache.commit/rollback方法。
+ * 
+ * 　　还有一个差别是使用了TransactionalCacheManager管理事务，其他逻辑就一样了。
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -89,14 +98,32 @@ public class CachingExecutor implements Executor {
     return delegate.queryCursor(ms, parameter, rowBounds);
   }
 
+  /**
+   * 如果二级缓存中找到了记录就直接返回,否则到DB查询后进行缓存
+   *
+   * 缓存键CacheKey的格式为：cacheKey=ID + offset + limit + sql + parameterValues + environmentId。
+   * @param ms
+   * @param parameterObject
+   * @param rowBounds
+   * @param resultHandler
+   * @param key
+   * @param boundSql
+   * @param <E>
+   * @return
+   * @throws SQLException
+   */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
     Cache cache = ms.getCache();
+    //首先判断是否启用了二级缓存
     if (cache != null) {
       flushCacheIfRequired(ms);
       if (ms.isUseCache() && resultHandler == null) {
         ensureNoOutParams(ms, boundSql);
+        // 如果二级缓存中找到了记录就直接返回,否则到DB查询后进行缓存
+        // 然后判断缓存中是否有对应的缓存条目(正常情况下，执行DML操作会清空缓存，也可以语句层面明确明确设置)，
+        // 有的话则返回，这样就不用二次查询了
         @SuppressWarnings("unchecked")
         List<E> list = (List<E>) tcm.getObject(cache, key);
         if (list == null) {
@@ -131,6 +158,11 @@ public class CachingExecutor implements Executor {
     }
   }
 
+  /**
+   * 存储过程不支持二级缓存
+   * @param ms
+   * @param boundSql
+   */
   private void ensureNoOutParams(MappedStatement ms, BoundSql boundSql) {
     if (ms.getStatementType() == StatementType.CALLABLE) {
       for (ParameterMapping parameterMapping : boundSql.getParameterMappings()) {

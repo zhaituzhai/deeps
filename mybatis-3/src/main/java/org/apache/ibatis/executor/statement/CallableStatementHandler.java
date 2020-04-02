@@ -79,6 +79,13 @@ public class CallableStatementHandler extends BaseStatementHandler {
     return resultList;
   }
 
+  /**
+   * MappedStatement.StatementType类型为CALLABLE，在Executor.doQuery方法中创建语句处理器的时候，就会返回CallableStatementHandler实例，
+   * 随后在调用语句处理器的初始化语句和设置参数 方法时，调用jdbc对应存储过程的prepareCall方法
+   * @param connection
+   * @return
+   * @throws SQLException
+   */
   @Override
   protected Statement instantiateStatement(Connection connection) throws SQLException {
     String sql = boundSql.getSql();
@@ -89,6 +96,11 @@ public class CallableStatementHandler extends BaseStatementHandler {
     }
   }
 
+  /**
+   * 调用语句处理器的初始化语句和设置参数 方法时，调用jdbc对应存储过程的prepareCall方法
+   * @param statement
+   * @throws SQLException
+   */
   @Override
   public void parameterize(Statement statement) throws SQLException {
     registerOutputParameters((CallableStatement) statement);
