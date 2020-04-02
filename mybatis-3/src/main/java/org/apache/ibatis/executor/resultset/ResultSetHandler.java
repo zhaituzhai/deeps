@@ -23,6 +23,12 @@ import java.sql.Statement;
 import java.util.List;
 
 /**
+ * 结果集处理器
+ *
+ * 接口中定义的三个接口分别用于处理常规查询的结果集,游标查询的结果集以及存储过程调用的出参设置。
+ * 和参数处理器一样,结果集处理器也只有一个默认实现DefaultResultSetHandler。
+ * 结果集处理器的功能包括对象的实例化、属性自动匹配计算、常规属性赋值、嵌套ResultMap的处理、嵌套查询的处理、鉴别器结果集的处理等
+ *
  * @author Clinton Begin
  */
 public interface ResultSetHandler {
