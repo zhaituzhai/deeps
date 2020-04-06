@@ -245,7 +245,10 @@ public class Configuration {
 
   /**
    * 类型注册器, 用于在执行sql语句的出入参映射以及mybatis-config文件里的各种配置
-   * 比如<transactionManager type="JDBC"/><dataSource type="POOLED">
+   * 比如
+   *
+   *    <transactionManager type="JDBC"/>
+   *    <dataSource type="POOLED">
    *
    * 从Configuration构造器和protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
    * 可以看出，所有我们在mybatis-config和mapper文件中使用的类似int/string/JDBC/POOLED等字面常量最终解析为

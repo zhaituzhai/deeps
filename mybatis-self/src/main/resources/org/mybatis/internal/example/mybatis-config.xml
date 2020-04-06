@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 属性配置元素可以将配置值具体化到一个属性文件中，并且使用配置文件的key作为占位符
+        application.properties
+        jdbc.driverClassName=com.mysql.jdbc.Driver
+        jdbc.url=jdbc:mysql://localhost:3306/mybatisdemo
+        jdbc.username=root
+        jdbc.password=admin
+        在mybatis-config.xml中可以使用application.properties文件中定义的占位符
+        当然也可以直接使用properties来设置值
+     -->
+    <properties resource="application.properties">
+        <property name="username" value="db_user" />
+        <property name="password" value="verysecurepwd" />
+    </properties>
+    <!-- 全局设置settings -->
+    <settings>
+        <setting name="cacheEnabled" value="true" />
+        <setting name="lazyLoadingEnabled" value="true" />
+        <setting name="multipleResultSetsEnabled" value="true" />
+        <setting name="useColumnLabel" value="true" />
+        <setting name="useGeneratedKeys" value="false" />
+        <setting name="autoMappingBehavior" value="PARTIAL" />
+        <setting name="defaultExecutorType" value="SIMPLE" />
+        <setting name="defaultStatementTimeout" value="25000" />
+        <setting name="safeRowBoundsEnabled" value="false" />
+        <setting name="mapUnderscoreToCamelCase" value="false" />
+        <setting name="localCacheScope" value="SESSION" />
+        <setting name="jdbcTypeForNull" value="OTHER" />
+        <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString" />
+    </settings>
+    <!-- 类型别名
+        主要是为了简化在mapper文件中paramerType和resultType对应的类全限定名
+     -->
+    <typeAliases>
+        <typeAlias alias="User" type="org.mybatis.internal.example.pojo.User" />
+        <!-- 可以提供需要取别名的类所在的包，mybatis会自动扫描包内的javaBean，然后分别为每个javaBean定义一个小写字母开头的
+             例如这个包下有一个Student，那么别名为：student
+             除此之外：@Alias("StudentAlias")
+                   public class Student{
+                           ...
+                   }
+            @Alias 注解将会覆盖配置文件中的<typeAliases>定义
+        -->
+        <package name="com.mybatis3.domain" />
+    </typeAliases>
+    <!--
+        类型句柄,类型处理器
+        当mybatis执行一个INSERT操作的时候，汇创建一个PreparedStatement对象，并且执行一系列操作（操作下面详细说）
+        这个过程中有一个setXXX()方式为占位符设置值的过程，xxx可以是Int，String，Date的任何一种类型，
+        那么mybatis是依据什么来判断该使用setInt()还是setString()呢？其实 MyBatis 是通过使用类型处理器（type handlers）来决定这么做的。
+        MyBatis 对于以下的类型使用内建的类型处理器：所有的基本数据类型、基本类型的包裹类型、byte[] 、
+        java.util.Date、java.sql.Date、java,sql.Time、java.sql.Timestamp、java 枚举类型等。所以当 MyBatis 发现
+        属性的类型属于上述类型，他会使用对应的类型处理器将值设置到 PreparedStatement 中，同样地，当从 SQL 结果集构
+        建 JavaBean 时，也有类似的过程。
+     -->
+    <typeHandlers>
+        <typeHandler handler="com.mybatis3.typehandlers.PhoneTypeHandler" />
+        <package name="com.mybatis3.typehandlers" />
+    </typeHandlers>
+    <!-- 数据库连接环境配置-->
+    <environments default="development">
+        <!-- environment：
+        mybatis可以有多个dataScource环境，如DEV（开发），TEST（测试），
+        可以通过默认的设置environment值来设定想要的environment  id。
+        如果一个应用需要连接多个数据库，需要将每一个数据库设置成一个单独的环境，
+        并且为每一个数据库设置一个SqlSessionFactory -->
+        <environment id="development">
+            <!-- 事务管理器
+                type1：JDBC:mybatis内部会使用JdbcTransactionFactory来创建TransectionManager。
+                           例如，部署到tomcat的应用程序，需要应用程序自己来管理程序
+                type2：MANAGED（托管，应用本身不去管理实务，交给所在服务器来管理）:
+                      mybatis内部使用ManagedTransactionFactory来创建事务管理其TransactionManager
+                           例如：当一个 JavaEE的应用程序部署在类似 JBoss， WebLogic，GlassFish 应用服务器上时，
+                           它们会使用 EJB 进行应用服务器的事务管理能力。在这些管理环境中，你可以使用 MANAGED 事务管理器。
+             -->
+            <transactionManager type="JDBC" />
+            <!-- 数据源dataSource
+                type1：UNPOOLED:会为每一个数据库操作创建一个新的链接，并关闭它。适合于小数据小并发的情况
+                type2:POOLED:会穿件一个数据库连接池，开发和测试阶段常用模式
+                type3:JNDI:从在服务器上配置好的JNDI数据源dataSource获取数据库连接，在生产环境，优先考虑
+             -->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driverClassName}" />
+                <property name="url" value="${jdbc.url}" />
+                <property name="username" value="${jdbc.username}" />
+                <property name="password" value="${jdbc.password}" />
+            </dataSource>
+        </environment>
+        <environment id="production">
+            <transactionManager type="MANAGED" />
+            <dataSource type="JNDI">
+                <property name="data_source" value="java:comp/jdbc/MyBatisDemoDS" />
+            </dataSource>
+        </environment>
+    </environments>
+    <!-- mapper文件映射 -->
+    <mappers>
+        <mapper resource="com/mybatis3/mappers/StudentMapper.xml" />
+        <mapper url="file:///D:/mybatisdemo/mappers/TutorMapper.xml" />
+        <mapper class="com.mybatis3.mappers.TutorMapper" />
+    </mappers>
+    <!--
+        附：
+        1、mybatis执行一条INSERT语句的过程
+            1)创建一个有占位符的 PreparedStatement 接口，如下：
+            Java Code
+            PreparedStatement pstmt = connection.prepareStatement
+            ("INSERT INTO STUDENTS(STUD_ID,NAME,EMAIL,DOB) VALUES(?,?,?,?)");
+            2)检查 Student 对象的属性 studId 的类型，然后使用合适 setXXX 方法去设置参数值。这里 studId 是 integer
+            类型，所以会使用 setInt()方法：
+            Java Code
+            pstmt.setInt(1,student.getStudId());
+            3)类似地，对于 name 和 email 属性都是 String 类型，MyBatis 使用 setString()方法设置参数。
+            Java Code
+            pstmt.setString(2, student.getName());
+            pstmt.setString(3, student.getEmail());
+            4)至于 dob 属性, MyBatis 会使用 setDate() 方法设置 dob 处占位符位置的值。
+            5)MyBaits 会将 java.util.Date 类型转换为 into java.sql.Timestamp 并设值：
+            pstmt.setTimestamp(4, new Timestamp((student.getDob()).
+            getTime()));
+        2、自定义typeHandler
+            假设表 STUDENTS 有一个 PHONE 字段，类型为 VARCHAR(15)，而 JavaBean  Student 有一个 PhoneNumber 类定义类型的 phoneNumber 属性。
+            Java Code
+            public class PhoneNumber{
+                private String countryCode;
+                private String stateCode;
+                private String number;
+                public PhoneNumber(){
+                    //...
+                }
+            public PhoneNumber(String countryCode, String stateCode, String number){
+                this.countryCode = countryCode;
+                this.stateCode = stateCode;
+                this.number = number;
+            }
+            public PhoneNumber(String string){
+                if(string != null){
+                    String[] parts = string.split("-");
+                    if(parts.length > 0) this.countryCode = parts[0];
+                    if(parts.length > 1) this.stateCode = parts[1];
+                    if(parts.length > 2) this.number = parts[2];
+                }
+            }
+            public String getAsString(){
+                return countryCode + "-" + stateCode + "-" + number;
+            }
+                // Setters and getters
+            }
+            public class Student{
+                private Integer id;
+                private String name;
+                private String email;
+                private PhoneNumber phone;
+                // Setters and getters
+            }
+            XML Code
+            <insert id="insertStudent" parameterType="Student">
+                insert into students(name,email,phone)
+                values(#{name},#{email},#{phone})
+            </insert>
+            这里，phone 参数需要传递给#{phone}；而 phone 对象是 PhoneNumber 类型。然而，MyBatis 并不知道该怎样来处理这个类型的对象。
+            为了让 MyBatis 明白怎样处理这个自定义的 Java 对象类型，如 PhoneNumber，我们可以创建一个自定义的类型处理器，如下所示：
+            1)MyBatis 提供了抽象类 BaseTypeHandler<T> ，我们可以继承此类创建自定义类型处理器。
+            Java Code
+            packagecom.mybatis3.typehandlers;
+            importjava.sql.CallableStatement;
+            importjava.sql.PreparedStatement;
+            importjava.sql.ResultSet;
+            importjava.sql.SQLException;
+            importorg.apache.ibatis.type.BaseTypeHandler;
+            importorg.apache.ibatis.type.JdbcType;
+            importcom.mybatis3.domain.PhoneNumber;
+            public class PhoneTypeHandler extends BaseTypeHandler<PhoneNumber>{
+                @Override
+                public void setNonNullParameter(PreparedStatement ps, int i,
+                PhoneNumber parameter, JdbcType jdbcType) throwsSQLException{
+                    ps.setString(i, parameter.getAsString());
+                }
+                @Override
+                public PhoneNumber getNullableResult(ResultSet rs, String columnName)throws SQLException{
+                    return new PhoneNumber(rs.getString(columnName));
+                }
+                @Override
+                public PhoneNumber getNullableResult(ResultSet rs, int columnIndex)throws SQLException{
+                    return new PhoneNumber(rs.getString(columnIndex));
+                }
+                @Override
+                public PhoneNumber getNullableResult(CallableStatement cs, int columnIndex)throws SQLException{
+                    return new PhoneNumber(cs.getString(columnIndex));
+                }
+            }
+            2)我们使用 ps.setString()和 rs.getString()方法是因为 phone 列是 VARCHAR 类型。
+            3)一旦我们实现了自定义的类型处理器，我们需要在 mybatis-config.xml 中注册它：
+            XML Code
+            <?xml version="1.0" encoding="utf-8"?>
+            <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+            "http://mybatis.org/dtd/mybatis-3-config.dtd">
+            <configuration>
+                <properties resource="application.properties" />
+                <typeHandlers>
+                    <typeHandler handler="com.mybatis3.typehandlers. PhoneTypeHandler" />
+                </typeHandlers>
+            </configuration>
+            注册 PhoneTypeHandler 后, MyBatis 就能够将 Phone 类型的对象值存储到 VARCHAR 类型的列上。
+     -->
+</configuration>

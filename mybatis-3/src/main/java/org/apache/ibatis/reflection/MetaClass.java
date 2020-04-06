@@ -15,23 +15,26 @@
  */
 package org.apache.ibatis.reflection;
 
+import org.apache.ibatis.reflection.invoker.GetFieldInvoker;
+import org.apache.ibatis.reflection.invoker.Invoker;
+import org.apache.ibatis.reflection.invoker.MethodInvoker;
+import org.apache.ibatis.reflection.property.PropertyTokenizer;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 
-import org.apache.ibatis.reflection.invoker.GetFieldInvoker;
-import org.apache.ibatis.reflection.invoker.Invoker;
-import org.apache.ibatis.reflection.invoker.MethodInvoker;
-import org.apache.ibatis.reflection.property.PropertyTokenizer;
-
 /**
+ * MetaClass 通过 Reflector 和 PropertyTokenizer 组合使用， 实现了对复杂的属性表达式的解析，并实现了获取指定属性描述信息的功能。MetaClass
  * @author Clinton Begin
  */
 public class MetaClass {
 
+  // ReflectorFactory 对象，用于缓存Reflector 对象
   private final ReflectorFactory reflectorFactory;
+  // 在创建MetaClass 时会指定一个类，该Reflector 对象会用于记录该类相关的元信息
   private final Reflector reflector;
 
   private MetaClass(Class<?> type, ReflectorFactory reflectorFactory) {

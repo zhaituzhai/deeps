@@ -15,11 +15,6 @@
  */
 package org.apache.ibatis.builder.xml;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Properties;
-import javax.sql.DataSource;
-
 import org.apache.ibatis.builder.BaseBuilder;
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.datasource.DataSourceFactory;
@@ -38,14 +33,15 @@ import org.apache.ibatis.reflection.MetaClass;
 import org.apache.ibatis.reflection.ReflectorFactory;
 import org.apache.ibatis.reflection.factory.ObjectFactory;
 import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
-import org.apache.ibatis.session.AutoMappingBehavior;
-import org.apache.ibatis.session.AutoMappingUnknownColumnBehavior;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.LocalCacheScope;
+import org.apache.ibatis.session.*;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+
+import javax.sql.DataSource;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Properties;
 
 /**
  * XMLConfigBuilder以及解析Mapper文件的
@@ -73,8 +69,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   public XMLConfigBuilder(Reader reader, String environment, Properties props) {
-    // new XPathParser(reader, true, props, new XMLMapperEntityResolver())
-    // 的参数含义分别是Reader，是否进行DTD 校验，属性配置，XML实体节点解析器。
+    // XMLMapperEntityResolver 解析器 new XPathParser()
     this(new XPathParser(reader, true, props, new XMLMapperEntityResolver()), environment, props);
   }
 
@@ -101,6 +96,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
     this.configuration.setVariables(props);
+    // config 第一次解析
     this.parsed = false;
     this.environment = environment;
     this.parser = parser;
@@ -110,7 +106,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
-    // 解析一次
+    //  config 解析第一次 设置解析状态为 true => config 只解析一次
     parsed = true;
     // mybatis配置文件解析的主流程  根节点 configuration
     parseConfiguration(parser.evalNode("/configuration"));
@@ -242,18 +238,24 @@ public class XMLConfigBuilder extends BaseBuilder {
    */
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
+      // 处理全部子节点
       for (XNode child : parent.getChildren()) {
         if ("package".equals(child.getName())) {
+          // 处理<package>节点  获取指定的包名
           String typeAliasPackage = child.getStringAttribute("name");
+          // 通过TypeAliasRegistry 扫描指定包中所有的类，并解析@Alias 注解解，完成别名注册
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
+          // 处理 <typeAlias> 节点  获取指定的别名  获取别名对应的类型
           String alias = child.getStringAttribute("alias");
           String type = child.getStringAttribute("type");
           try {
             Class<?> clazz = Resources.classForName(type);
             if (alias == null) {
+              // 扫描@Alias 注解完成注册
               typeAliasRegistry.registerAlias(clazz);
             } else {
+              // 注册别名
               typeAliasRegistry.registerAlias(alias, clazz);
             }
           } catch (ClassNotFoundException e) {
@@ -265,6 +267,10 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   /**
+   *
+   * 插件是MyBatis 提供的扩展机制之一，用户可以通过添加自定义插件在SQL 语句执行过程中的某一点进行拦截。
+   * MyBatis 中的自定义插件只需实现Interceptor 接口，并通过注解指定想要拦截的方法签名即可。
+   *
    * 几乎所有优秀的框架都会预留插件体系以便扩展，mybatis调用pluginElement(root.evalNode(“plugins”));
    * 加载mybatis插件，最常用的插件应该算是分页插件PageHelper了，再比如druid连接池提供的各种监控、拦截、预发检查功能，
    * 在使用其它连接池比如dbcp的时候，在不修改连接池源码的情况下，就可以借助mybatis的插件体系实现。
@@ -280,12 +286,17 @@ public class XMLConfigBuilder extends BaseBuilder {
    */
   private void pluginElement(XNode parent) throws Exception {
     if (parent != null) {
+      // 追历全部子节点（即<plugin>节点）
       for (XNode child : parent.getChildren()) {
+        // 获取 <plugin> 节点的 interceptor 属性的值
         String interceptor = child.getStringAttribute("interceptor");
+        // 获取<plugin>节点下 <properties> 配置的信息，并形成 Properties 对象
         Properties properties = child.getChildrenAsProperties();
-        // 将interceptor指定的名称解析为Interceptor类型
+        // 通过前面介绍的TypeAliasRegistry 解析别名之后，实例化Interceptor 对象
         Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
+        // 设置属性
         interceptorInstance.setProperties(properties);
+        // 设置对象
         configuration.addInterceptor(interceptorInstance);
       }
     }
@@ -312,10 +323,14 @@ public class XMLConfigBuilder extends BaseBuilder {
    */
   private void objectFactoryElement(XNode context) throws Exception {
     if (context != null) {
+      // 获取 <objectFactory> 节点的 type 属性
       String type = context.getStringAttribute("type");
+      // 获取 <objectFactory> 节点下配置的信息，并形成 Properties 对象
       Properties properties = context.getChildrenAsProperties();
+      // 进行别名解析后，实例化自定义 ObjectFactory 实现
       ObjectFactory factory = (ObjectFactory) resolveClass(type).newInstance();
       factory.setProperties(properties);
+      // 将自定义 ObjectFactory 对象记录到 configuration 对象的objectFactory 字段中，待后续使用
       configuration.setObjectFactory(factory);
     }
   }
@@ -372,7 +387,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       Properties defaults = context.getChildrenAsProperties();
       String resource = context.getStringAttribute("resource");
       String url = context.getStringAttribute("url");
-      // 必须至少包含resource或者url属性之一
+      // properties元素不能同时指定URL和基于资源的属性文件引用。请指定其中一个。
       if (resource != null && url != null) {
         throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
       }
@@ -474,6 +489,17 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   /**
+   *
+   * MyBatis 不能像 Hibernate 那样， 直接帮助开发人员屏蔽多种数据库产品在 SQL 语言支持方面的差异。但是在mybatis-config.xml 配置文
+   * 件中，通过<databaseldProvider>定义所有支持的数据库产品的 databaseld ，然后在映射配置文件中定义SQL 语句节点时，通过databaseld
+   * 指定该SQL 语句应用的数据库产品，这样也可以实现类似的功能。
+   *
+   * 在MyBatis初始化时，会根据前面确定的 DataSource 确定当前使用的数据库产品，然后在解析映射配置文件时，加载不带databas eld 属性和
+   * 带有匹配当前数据库databaseld 属性的所有SQL 语句。如果同时找到带有databaseld 和不带database Id 的相同语句，则后者会被舍弃，使用前者。
+   *
+   * XMLConfigBuilder.databaseIdProviderElement() 方法负责解析<databaseldProvider>节点，并创建指定的 DatabaseldProvider 对象。
+   * DatabaseldProvider 会返回 databaseld 值， MyBatis 会根据databaseld 选择合适的SQL 进行执行。
+   *
    * MyBatis 可以根据不同的数据库厂商执行不同的语句，这种多厂商的支持是基于映射语句中的 databaseId 属性。
    * MyBatis 会加载不带 databaseId 属性和带有匹配当前数据库 databaseId 属性的所有语句。
    * 如果同时找到带有 databaseId 和不带 databaseId 的相同语句，则后者会被舍弃。
@@ -495,15 +521,20 @@ public class XMLConfigBuilder extends BaseBuilder {
     if (context != null) {
       String type = context.getStringAttribute("type");
       // awful patch to keep backward compatibility
+      // 为了保证兼容性，修改 type 取值
       if ("VENDOR".equals(type)) {
           type = "DB_VENDOR";
       }
+      // 解析相关配置信息
       Properties properties = context.getChildrenAsProperties();
+      // 创建DatabaseidProvider 对象
       databaseIdProvider = (DatabaseIdProvider) resolveClass(type).newInstance();
+      // 配置DatabaseidProvider ，完成初始化
       databaseIdProvider.setProperties(properties);
     }
     Environment environment = configuration.getEnvironment();
     if (environment != null && databaseIdProvider != null) {
+      // 通过前面确定的 DataSource 获取databaseId ， 并记录到Configuration.databaseid 字段中
       String databaseId = databaseIdProvider.getDatabaseId(environment.getDataSource());
       configuration.setDatabaseId(databaseId);
     }

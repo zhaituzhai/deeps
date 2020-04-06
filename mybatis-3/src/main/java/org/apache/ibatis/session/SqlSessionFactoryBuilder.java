@@ -15,15 +15,15 @@
  */
 package org.apache.ibatis.session;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Properties;
-
 import org.apache.ibatis.builder.xml.XMLConfigBuilder;
 import org.apache.ibatis.exceptions.ExceptionFactory;
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Properties;
 
 /**
  * Builds {@link SqlSession} instances.
@@ -32,7 +32,7 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
  * 读取配置信息方式，无论是字符流还是字节流方式，首先都是将XML配置文件构建为Configuration配置类，然后将Configuration设
  * 置到SqlSessionFactory默认实现DefaultSqlSessionFactory的configurationz字段并返回。
  *
- * 所以，它本身很简单，解析配置文件的关键逻辑都委托给XMLConfigBuilder了，我们以字符流也就是java.io.Reader为例进行分析，
+ * 所以，它本身很简单，解析配置文件的关键逻辑都委托给XMLConfigBuilder了，我们以字符流也就是java.io.Reader 为例进行分析，
  * SqlSessionFactoryBuilder使用了XMLConfigBuilder作为解析器。
  * @author Clinton Begin
  */
