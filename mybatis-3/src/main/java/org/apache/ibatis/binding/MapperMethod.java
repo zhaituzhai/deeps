@@ -36,13 +36,18 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * MapperMethod的功能：
+ * 1. 解析Mapper接口的方法，并封装成MapperMethod对象。
+ * 2. 将Sql命令，正确路由到恰当的SqlSession的方法上。
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
  */
 public class MapperMethod {
 
+  // 保存了Sql命令的类型和键id
   private final SqlCommand command;
+  // 保存了Mapper接口方法的解析信息
   private final MethodSignature method;
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
@@ -51,6 +56,7 @@ public class MapperMethod {
   }
 
   /**
+   * 根据解析结果，路由到恰当的SqlSession方法上
    * CRUD 处理
    * 对非查询类SQL，首先将请求参数转换为mybatis内部的格式，然后调用sqlSession实例对应的方法，这就和第一种方式的SQL逻辑一样的。
    * 对于查询类SQL，根据返回类型是void/many/map/one/cursor分别调用不同的实现入口，但主体逻辑都类似，
@@ -224,6 +230,7 @@ public class MapperMethod {
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
+      // full id, 通过它可以找到MappedStatement
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
@@ -300,7 +307,9 @@ public class MapperMethod {
       this.returnsCursor = Cursor.class.equals(this.returnType);
       this.mapKey = getMapKey(method);
       this.returnsMap = this.mapKey != null;
+      // 分页参数
       this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
+      // 自定义ResultHandler
       this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }

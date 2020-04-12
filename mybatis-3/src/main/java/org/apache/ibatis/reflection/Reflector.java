@@ -29,6 +29,8 @@ import java.util.Map.Entry;
  * This class represents a cached set of class definition information that
  * allows for easy mapping between property names and getter/setter methods.
  * 此类表示一组缓存的类定义信息，可轻松在属性名称和getter / setter方法之间进行映射。
+ *
+ * 保存一个类Class的反射Invoker信息集合。
  * @author Clinton Begin
  */
 public class Reflector {

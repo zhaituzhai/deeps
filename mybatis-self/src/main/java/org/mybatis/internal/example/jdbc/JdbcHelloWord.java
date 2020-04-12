@@ -49,6 +49,8 @@ public class JdbcHelloWord {
             System.out.print("lfPartyId:" + lfPartyId + "partyName:" + partyName + "age: " + age);
         }
 
+        con.close();
+
     }
 
 }

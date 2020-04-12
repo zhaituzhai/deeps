@@ -15,6 +15,10 @@
  */
 package org.apache.ibatis.binding;
 
+import org.apache.ibatis.lang.UsesJava7;
+import org.apache.ibatis.reflection.ExceptionUtil;
+import org.apache.ibatis.session.SqlSession;
+
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -22,10 +26,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
-
-import org.apache.ibatis.lang.UsesJava7;
-import org.apache.ibatis.reflection.ExceptionUtil;
-import org.apache.ibatis.session.SqlSession;
 
 /**
  * @author Clinton Begin
@@ -63,10 +63,12 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    // 投鞭断流
     final MapperMethod mapperMethod = cachedMapperMethod(method);
     return mapperMethod.execute(sqlSession, args);
   }
 
+  // 缓存MapperMethod
   private MapperMethod cachedMapperMethod(Method method) {
     MapperMethod mapperMethod = methodCache.get(method);
     if (mapperMethod == null) {

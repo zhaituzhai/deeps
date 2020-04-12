@@ -79,7 +79,7 @@
             <transactionManager type="JDBC" />
             <!-- 数据源dataSource
                 type1：UNPOOLED:会为每一个数据库操作创建一个新的链接，并关闭它。适合于小数据小并发的情况
-                type2:POOLED:会穿件一个数据库连接池，开发和测试阶段常用模式
+                type2:POOLED:会创建一个数据库连接池，开发和测试阶段常用模式
                 type3:JNDI:从在服务器上配置好的JNDI数据源dataSource获取数据库连接，在生产环境，优先考虑
              -->
             <dataSource type="POOLED">

@@ -15,14 +15,6 @@
  */
 package org.apache.ibatis.executor;
 
-import java.sql.BatchUpdateException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
@@ -34,6 +26,14 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
+
+import java.sql.BatchUpdateException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 这个执行器会批量执行所有更新语句，也就是 jdbc addBatch API 的 facade 模式。
@@ -86,28 +86,34 @@ public class BatchExecutor extends BaseExecutor {
     final Configuration configuration = ms.getConfiguration();
     final StatementHandler handler = configuration.newStatementHandler(this, ms, parameterObject, RowBounds.DEFAULT, null, null);
     final BoundSql boundSql = handler.getBoundSql();
+    // 本次执行的语句
     final String sql = boundSql.getSql();
     final Statement stmt;
     // 如果最新执行的一条语句和前面一条语句相同,就不创建新的语句了，直接用缓存的语句，只是把参数对象添加到该语句对应
     // 的BatchResult中否则的话，无论是否在未提交之前，还有pending的语句，都新插入一条语句到list中
+    // 要求当前的sql和上次的currentSql相同,同时MappedStatement也必须相同
     if (sql.equals(currentSql) && ms.equals(currentStatement)) {
+      // 已经存在Statement，去除最后一个Statement (list 有序)
       int last = statementList.size() - 1;
       stmt = statementList.get(last);
       applyTransactionTimeout(stmt);
-     handler.parameterize(stmt);//fix Issues 322
+      handler.parameterize(stmt);//fix Issues 322
       BatchResult batchResult = batchResultList.get(last);
       batchResult.addParameterObject(parameterObject);
     } else {
+      // 不存在则新建statement
       Connection connection = getConnection(ms.getStatementLog());
       stmt = handler.prepare(connection, transaction.getTimeout());
       handler.parameterize(stmt);    //fix Issues 322
       currentSql = sql;
       currentStatement = ms;
+      // 存入statement缓存
       statementList.add(stmt);
       batchResultList.add(new BatchResult(ms, sql, parameterObject));
     }
   // handler.parameterize(stmt);
     // 调用jdbc的addBatch方法
+    // 将sql以addBatch() 的方式添加到statement中
     handler.batch(stmt);
     return BATCH_UPDATE_RETURN_VALUE;
   }

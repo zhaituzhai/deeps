@@ -15,41 +15,22 @@
  */
 package org.apache.ibatis.builder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.decorators.LruCache;
 import org.apache.ibatis.cache.impl.PerpetualCache;
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
-import org.apache.ibatis.mapping.CacheBuilder;
-import org.apache.ibatis.mapping.Discriminator;
-import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.ParameterMap;
-import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.mapping.ParameterMode;
-import org.apache.ibatis.mapping.ResultFlag;
-import org.apache.ibatis.mapping.ResultMap;
-import org.apache.ibatis.mapping.ResultMapping;
-import org.apache.ibatis.mapping.ResultSetType;
-import org.apache.ibatis.mapping.SqlCommandType;
-import org.apache.ibatis.mapping.SqlSource;
-import org.apache.ibatis.mapping.StatementType;
+import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.reflection.MetaClass;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
+import java.util.*;
+
 /**
+ * 通用构建Mapper辅助类
  * @author Clinton Begin
  */
 public class MapperBuilderAssistant extends BaseBuilder {
@@ -142,9 +123,18 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return cache;
   }
 
+  /**
+   * ParameterMap是创建并注册的
+   * @param id
+   * @param parameterClass
+   * @param parameterMappings
+   * @return
+   */
   public ParameterMap addParameterMap(String id, Class<?> parameterClass, List<ParameterMapping> parameterMappings) {
+    // 处理namespace名称空间
     id = applyCurrentNamespace(id, false);
     ParameterMap parameterMap = new ParameterMap.Builder(configuration, id, parameterClass, parameterMappings).build();
+    // 注册至Configuration
     configuration.addParameterMap(parameterMap);
     return parameterMap;
   }
@@ -164,6 +154,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     Class<?> javaTypeClass = resolveParameterJavaType(parameterType, property, javaType, jdbcType);
     TypeHandler<?> typeHandlerInstance = resolveTypeHandler(javaTypeClass, typeHandler);
 
+    // ParameterMapping.Builder用于构建ParameterMapping对象，而ParameterMap.Builder则用于构建ParameterMap对象。
     return new ParameterMapping.Builder(configuration, property, javaTypeClass)
         .jdbcType(jdbcType)
         .resultMapId(resultMap)

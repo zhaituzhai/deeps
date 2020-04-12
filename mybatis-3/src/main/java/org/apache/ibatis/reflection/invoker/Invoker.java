@@ -18,6 +18,7 @@ package org.apache.ibatis.reflection.invoker;
 import java.lang.reflect.InvocationTargetException;
 
 /**
+ * 反射类Class的Method、Field封装。
  * @author Clinton Begin
  */
 public interface Invoker {

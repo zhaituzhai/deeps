@@ -15,12 +15,12 @@
  */
 package org.apache.ibatis.mapping;
 
-import java.sql.ResultSet;
-
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
+
+import java.sql.ResultSet;
 
 /**
  * 每个参数映射<>标签都被创建为一个ParameterMapping实例，其中包含和结果映射类似的信息
@@ -101,6 +101,7 @@ public class ParameterMapping {
     }
 
     public ParameterMapping build() {
+      // 给每一个ParameterMapping绑定一个TypeHandler，且必须绑定
       resolveTypeHandler();
       validate();
       return parameterMapping;
