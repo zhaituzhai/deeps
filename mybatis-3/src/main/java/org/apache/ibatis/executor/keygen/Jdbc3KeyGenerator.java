@@ -15,16 +15,6 @@
  */
 package org.apache.ibatis.executor.keygen;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.ExecutorException;
@@ -35,7 +25,14 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
+
 /**
+ * 用于处理数据库支持自增主键的情况，如MySQL的auto_increment。
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
@@ -60,6 +57,7 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
   public void processBatch(MappedStatement ms, Statement stmt, Collection<Object> parameters) {
     ResultSet rs = null;
     try {
+      // 获得返回的主键值结果集
       rs = stmt.getGeneratedKeys();
       final Configuration configuration = ms.getConfiguration();
       final TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
@@ -67,6 +65,7 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
       final ResultSetMetaData rsmd = rs.getMetaData();
       TypeHandler<?>[] typeHandlers = null;
       if (keyProperties != null && rsmd.getColumnCount() >= keyProperties.length) {
+        // 给参数object对象的属性赋主键值（批量插入，可能是多个）
         for (Object parameter : parameters) {
           // there should be one row for each statement (also one for each parameter)
           if (!rs.next()) {
@@ -76,6 +75,7 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
           if (typeHandlers == null) {
             typeHandlers = getTypeHandlers(typeHandlerRegistry, metaParam, keyProperties, rsmd);
           }
+          // 赋值
           populateKeys(rs, metaParam, keyProperties, typeHandlers);
         }
       }
@@ -131,11 +131,13 @@ public class Jdbc3KeyGenerator implements KeyGenerator {
   }
 
   private void populateKeys(ResultSet rs, MetaObject metaParam, String[] keyProperties, TypeHandler<?>[] typeHandlers) throws SQLException {
+    // 主键字段，可能是多个（一般情况下，是一个）
     for (int i = 0; i < keyProperties.length; i++) {
       String property = keyProperties[i];
       TypeHandler<?> th = typeHandlers[i];
       if (th != null) {
         Object value = th.getResult(rs, i + 1);
+        // 反射赋值
         metaParam.setValue(property, value);
       }
     }

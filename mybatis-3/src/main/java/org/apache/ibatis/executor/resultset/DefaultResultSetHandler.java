@@ -389,7 +389,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   /**
-   * 处理主记录
+   * 处理主记录分页
    * @param rsw
    * @param resultMap
    * @param resultHandler
@@ -444,9 +444,11 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   private void skipRows(ResultSet rs, RowBounds rowBounds) throws SQLException {
     if (rs.getType() != ResultSet.TYPE_FORWARD_ONLY) {
       if (rowBounds.getOffset() != RowBounds.NO_ROW_OFFSET) {
+        // 直接定位
         rs.absolute(rowBounds.getOffset());
       }
     } else {
+      // 只能逐条滚动到指定位置
       for (int i = 0; i < rowBounds.getOffset(); i++) {
         rs.next();
       }
