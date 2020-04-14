@@ -15,11 +15,11 @@
  */
 package org.apache.ibatis.scripting.xmltags;
 
-import java.util.Map;
-
 import org.apache.ibatis.parsing.GenericTokenParser;
 import org.apache.ibatis.parsing.TokenHandler;
 import org.apache.ibatis.session.Configuration;
+
+import java.util.Map;
 
 /**
  * @author Clinton Begin
@@ -27,6 +27,7 @@ import org.apache.ibatis.session.Configuration;
 public class ForEachSqlNode implements SqlNode {
   public static final String ITEM_PREFIX = "__frch_";
 
+  // OGNL表达式计算器
   private final ExpressionEvaluator evaluator;
   private final String collectionExpression;
   private final SqlNode contents;
@@ -52,7 +53,7 @@ public class ForEachSqlNode implements SqlNode {
   @Override
   public boolean apply(DynamicContext context) {
     Map<String, Object> bindings = context.getBindings();
-    // 将Map/Array/List统一包装为迭代器接口
+    // 将Map/Array/List统一包装为迭代器接口 // 计算集合表达式
     final Iterable<?> iterable = evaluator.evaluateIterable(collectionExpression, bindings);
     if (!iterable.iterator().hasNext()) {
       return true;

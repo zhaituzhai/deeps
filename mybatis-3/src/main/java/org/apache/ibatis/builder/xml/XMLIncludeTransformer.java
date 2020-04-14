@@ -15,10 +15,6 @@
  */
 package org.apache.ibatis.builder.xml;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.builder.IncompleteElementException;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
@@ -28,6 +24,10 @@ import org.apache.ibatis.session.Configuration;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Frank D. Martinez [mnesarco]
@@ -95,14 +95,18 @@ public class XMLIncludeTransformer {
     if (source.getNodeName().equals("include")) {
       Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);
       Properties toIncludeContext = getVariablesContext(source, variablesContext);
+      // 递归调用
       applyIncludes(toInclude, toIncludeContext, true);
       if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {
         toInclude = source.getOwnerDocument().importNode(toInclude, true);
       }
+      // 将include节点，替换为sqlFragment节点
       source.getParentNode().replaceChild(toInclude, source);
       while (toInclude.hasChildNodes()) {
+        // 将sqlFragment的子节点（也就是文本节点），插入到sqlFragment的前面
         toInclude.getParentNode().insertBefore(toInclude.getFirstChild(), toInclude);
       }
+      // 移除sqlFragment节点
       toInclude.getParentNode().removeChild(toInclude);
     } else if (source.getNodeType() == Node.ELEMENT_NODE) {
       if (included && !variablesContext.isEmpty()) {
@@ -115,11 +119,13 @@ public class XMLIncludeTransformer {
       }
       NodeList children = source.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
+        // 递归调用
         applyIncludes(children.item(i), variablesContext, included);
       }
     } else if (included && source.getNodeType() == Node.TEXT_NODE
         && !variablesContext.isEmpty()) {
       // replace variables in text node
+      // 通过PropertyParser替换所有${xxx}占位符(文本节点)
       source.setNodeValue(PropertyParser.parse(source.getNodeValue(), variablesContext));
     }
   }

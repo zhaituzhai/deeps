@@ -16,6 +16,7 @@
 package org.apache.ibatis.parsing;
 
 /**
+ * 负责解析sql中的占位符${name}和#{name}，TokenHandler则是如何处理这些占位符。
  * @author Clinton Begin
  */
 public class GenericTokenParser {

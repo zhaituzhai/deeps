@@ -120,7 +120,7 @@ public class DynamicSqlSourceTest extends BaseDataTest {
   @Test
   public void shouldConditionallyChooseSecond() throws Exception {
     final String expected = "SELECT * FROM BLOG WHERE CATEGORY = 'NONE'";
-    DynamicSqlSource source = createDynamicSqlSource(
+    DynamicSqlSource source = createDynamicSqlSource(IfHandler
         new TextSqlNode("SELECT * FROM BLOG"),
         new ChooseSqlNode(new ArrayList<SqlNode>() {{
           add(new IfSqlNode(mixedContents(new TextSqlNode("WHERE CATEGORY = ?")), "false"

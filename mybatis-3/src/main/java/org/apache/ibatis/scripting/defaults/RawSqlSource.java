@@ -15,8 +15,6 @@
  */
 package org.apache.ibatis.scripting.defaults;
 
-import java.util.HashMap;
-
 import org.apache.ibatis.builder.SqlSourceBuilder;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.SqlSource;
@@ -24,6 +22,8 @@ import org.apache.ibatis.scripting.xmltags.DynamicContext;
 import org.apache.ibatis.scripting.xmltags.DynamicSqlSource;
 import org.apache.ibatis.scripting.xmltags.SqlNode;
 import org.apache.ibatis.session.Configuration;
+
+import java.util.HashMap;
 
 /**
  * Static SqlSource. It is faster than {@link DynamicSqlSource} because mappings are 
@@ -51,6 +51,7 @@ public class RawSqlSource implements SqlSource {
   public RawSqlSource(Configuration configuration, String sql, Class<?> parameterType) {
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> clazz = parameterType == null ? Object.class : parameterType;
+    // 在这里完成#{xxx}替换为？号
     sqlSource = sqlSourceParser.parse(sql, clazz, new HashMap<String, Object>());
   }
 
@@ -63,6 +64,7 @@ public class RawSqlSource implements SqlSource {
    */
   private static String getSql(Configuration configuration, SqlNode rootSqlNode) {
     DynamicContext context = new DynamicContext(configuration, null);
+    // 创建RawSqlSource时，就完成sql的拼接工作，因为它没有动态sql的内容，Mybatis初始化时，就能确定最终的sql。
     rootSqlNode.apply(context);
     return context.getSql();
   }
