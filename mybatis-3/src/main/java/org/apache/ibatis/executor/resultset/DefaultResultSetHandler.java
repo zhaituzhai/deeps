@@ -550,7 +550,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   private Object getPropertyMappingValue(ResultSet rs, MetaObject metaResultObject, ResultMapping propertyMapping, ResultLoaderMap lazyLoader, String columnPrefix)
       throws SQLException {
     if (propertyMapping.getNestedQueryId() != null) {
-      // 处理嵌套query类型的属性
+      // 处理嵌套query类型的属性 执行另外一个select查询，把查询结果赋值给属性值，比如Student对象的teacher属性。
       return getNestedQueryMappingValue(rs, metaResultObject, propertyMapping, lazyLoader, columnPrefix);
     } else if (propertyMapping.getResultSet() != null) {
       // 处理resultMap类型的属性,主要是：
@@ -877,11 +877,17 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         executor.deferLoad(nestedQuery, metaResultObject, property, key, targetType);
         value = DEFERED;
       } else {
+        // ResultLoader保存了关联查询所需要的所有信息
         final ResultLoader resultLoader = new ResultLoader(configuration, executor, nestedQuery, nestedQueryParameterObject, targetType, key, nestedBoundSql);
         if (propertyMapping.isLazy()) {
+          // 执行延迟加载
+          // 语意：resultLoader的查询结果将赋值给metaResultObject源对象的property属性,resultLoader的查询参数值来自于metaResultObject源对象属性中。
+          // 举例：查询Teacher，赋值给Student的teacher属性，参数来自于查询Student的ResultSet的teacher_id列的值。
+          // 由于需要执行延迟加载，将查询相关信息放入缓存，但不执行查询，使用该属性时，自动触发加载操作。
           lazyLoader.addLoader(property, metaResultObject, resultLoader);
           value = DEFERED;
         } else {
+          // 不执行延迟加载，立即查询并赋值
           value = resultLoader.loadResult();
         }
       }
@@ -1049,6 +1055,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       applyNestedResultMappings(rsw, resultMap, metaObject, columnPrefix, combinedKey, false);
       ancestorObjects.remove(resultMapId);
     } else {
+      // 如果存在级联查询
       final ResultLoaderMap lazyLoader = new ResultLoaderMap();
       // 判断是否至少找到了一个不为null的属性值
       rowValue = createResultObject(rsw, resultMap, lazyLoader, columnPrefix);

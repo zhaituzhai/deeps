@@ -15,19 +15,6 @@
  */
 package org.apache.ibatis.executor.loader;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BaseExecutor;
 import org.apache.ibatis.executor.BatchResult;
@@ -41,6 +28,15 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.sql.SQLException;
+import java.util.*;
+
 /**
  * @author Clinton Begin
  * @author Franta Mejta
@@ -49,6 +45,12 @@ public class ResultLoaderMap {
 
   private final Map<String, LoadPair> loaderMap = new HashMap<String, LoadPair>();
 
+  /**
+   * ResultLoader保存了一个select查询所需要的所有信息，那么，将查询结果赋值给metaResultObject源对象的property属性，这些基本信息都缓存至loaderMap内，这就是语意。
+   * @param property
+   * @param metaResultObject
+   * @param resultLoader
+   */
   public void addLoader(String property, MetaObject metaResultObject, ResultLoader resultLoader) {
     String upperFirst = getUppercaseFirstProperty(property);
     if (!upperFirst.equalsIgnoreCase(property) && loaderMap.containsKey(upperFirst)) {

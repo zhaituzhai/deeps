@@ -661,14 +661,14 @@ public class Configuration {
 
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
-    parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
+    parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler); // parameter
     return parameterHandler;
   }
 
   public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds, ParameterHandler parameterHandler,
       ResultHandler resultHandler, BoundSql boundSql) {
     ResultSetHandler resultSetHandler = new DefaultResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
-    resultSetHandler = (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
+    resultSetHandler = (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler); // resultSet
     return resultSetHandler;
   }
 
@@ -685,7 +685,9 @@ public class Configuration {
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
     //  // 如果有拦截器的话，则为语句处理器新生成一个代理类
-    statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
+    // 重新审视interceptorChain.pluginAll()方法：
+    // 该方法在创建上述4个接口对象时调用，其含义为给这些接口对象注册拦截器功能，注意是注册，而不是执行拦截。
+    statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler); //statement
     return statementHandler;
   }
 
@@ -713,7 +715,7 @@ public class Configuration {
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
-    executor = (Executor) interceptorChain.pluginAll(executor);
+    executor = (Executor) interceptorChain.pluginAll(executor); // executor
     return executor;
   }
 

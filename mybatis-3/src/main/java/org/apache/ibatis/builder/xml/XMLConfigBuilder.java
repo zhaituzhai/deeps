@@ -294,7 +294,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         Properties properties = child.getChildrenAsProperties();
         // 通过前面介绍的TypeAliasRegistry 解析别名之后，实例化Interceptor 对象
         Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
-        // 设置属性
+        // 设置属性 拦截器属性设置
         interceptorInstance.setProperties(properties);
         // 设置对象
         configuration.addInterceptor(interceptorInstance);

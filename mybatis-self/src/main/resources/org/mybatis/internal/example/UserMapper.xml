@@ -2,6 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.mybatis.internal.example.mapper.UserMapper">
+    <!--<cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>-->
+    <!--
+    FIFO：First In First Out先进先出队列。
+
+    flushInterval="60000"，间隔60秒清空缓存，这个间隔60秒，是被动触发的，而不是定时器轮询的。
+
+    size=512，表示队列最大512个长度，大于则移除队列最前面的元素，这里的长度指的是CacheKey的个数。
+
+    CacheKey的生成策略，和一级缓存相同，id + offset + limit + sql + param value + environment id。
+
+    readOnly="true"，表示任何获取对象的操作，都将返回同一实例对象。如果readOnly="false"，则每次返回该对象的拷贝对象，简单说就是序列化复制一份返回。
+    -->
     <insert id="addUser" parameterType="org.mybatis.internal.example.pojo.User">
         INSERT INTO self_user(username, age) VALUES (#{username}, #{age})
     </insert>

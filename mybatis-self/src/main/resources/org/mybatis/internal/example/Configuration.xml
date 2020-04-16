@@ -13,6 +13,10 @@
     <objectWrapperFactory type="org.mybatis.internal.example.type.CustomWrapperFactory"/>-->
     <settings>
         <setting name="logImpl" value="STDOUT_LOGGING" />
+        <!--一级缓存-->
+        <!--<setting name="localCacheScope" value="SESSION|STATEMENT" />-->
+        <!--二级缓存-->
+        <!--<setting name="cacheEnabled" value="true|false" />-->
     </settings>
     <plugins>
         <plugin interceptor="org.mybatis.internal.example.interceptor.MyBatisInterceptor">

@@ -15,11 +15,6 @@
  */
 package org.apache.ibatis.executor.loader;
 
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.sql.DataSource;
-
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.ExecutorException;
@@ -34,7 +29,12 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.TransactionFactory;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.List;
+
 /**
+ * 它保存了执行一个select查询所需要的所有信息。
  * @author Clinton Begin
  */
 public class ResultLoader {
@@ -66,6 +66,11 @@ public class ResultLoader {
     this.creatorThreadId = Thread.currentThread().getId();
   }
 
+  /**
+   * 一对多查询原理，和一对一查询原理是一模一样的，都是将结果以List的形式返回，如果是一对一查询，就取List的第0个元素，如果是一对多查询，就直接返回List。
+   * @return
+   * @throws SQLException
+   */
   public Object loadResult() throws SQLException {
     List<Object> list = selectList();
     resultObject = resultExtractor.extractObjectFromList(list, targetType);
