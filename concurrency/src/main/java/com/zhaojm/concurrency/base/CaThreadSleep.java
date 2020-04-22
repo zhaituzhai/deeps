@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @date 2020-04-20 18:01
  */
 public class CaThreadSleep {
-    /* 创建一个独占锁 */
+    /** 创建一个独占锁 */
     private static final ReentrantLock lock = new ReentrantLock();
 
     public static void main(String[] args) {
