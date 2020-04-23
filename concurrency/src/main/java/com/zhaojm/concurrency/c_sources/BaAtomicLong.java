@@ -77,6 +77,16 @@ public class BaAtomicLong implements Runnable{
 
 
     // 主要方法
+    // Atomically increments by one the current value.
+    public final long incrementAndGet() {
+        return unsafe.getAndAddLong(this, valueOffset, 1L) + 1L;
+    }
+
+    // Atomically decrements by one the current value.
+    public final long decrementAndGet() {
+        return unsafe.getAndAddLong(this, valueOffset, -1L) - 1L;
+    }
+
 
 
      */
