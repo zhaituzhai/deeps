@@ -21,6 +21,7 @@ public class BaAtomicLong implements Runnable{
 
     private void evenIncrement() {
         i.addAndGet(2);
+        i.incrementAndGet();
     }
 
     @Override
@@ -49,5 +50,35 @@ public class BaAtomicLong implements Runnable{
             }
         }
     }
+
+
+    /*
+    // AtomicLong 源码
+    // 类属性
+    // 获取 Unsafe 实例
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
+    // 存放变量 value 的偏移量
+    private static final long valueOffset;
+    // 记录基础JVM是否长时间支持无锁compareAndSwap。尽管Unsafe.compareAndSwapLong方法在两种情
+    // 况下均有效，但应在Java级别上处理某些构造，以避免锁定用户可见的锁。
+    static final boolean VM_SUPPORTS_LONG_CAS = VMSupportsCS8();
+    private static native boolean VMSupportsCS8();
+
+    static {
+        try {
+            // 获取 value 在 AtomicLong 中的偏移量
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicLong.class.getDeclaredField("value"));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+
+    // 实际的变量值
+    private volatile long value;
+
+
+    // 主要方法
+
+
+     */
 
 }
