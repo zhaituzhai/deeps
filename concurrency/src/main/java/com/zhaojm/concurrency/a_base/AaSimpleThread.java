@@ -1,4 +1,4 @@
-package com.zhaojm.concurrency.base;
+package com.zhaojm.concurrency.a_base;
 
 /**
  * 简单下线程创建

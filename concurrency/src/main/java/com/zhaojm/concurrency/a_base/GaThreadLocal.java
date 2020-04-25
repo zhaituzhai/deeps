@@ -1,4 +1,4 @@
-package com.zhaojm.concurrency.base;
+package com.zhaojm.concurrency.a_base;
 
 /**
  * 多钱程访问同一个共享变量时特别容易出现并发问题，特别是在多个线程需要对一个共享变量进行写入时。

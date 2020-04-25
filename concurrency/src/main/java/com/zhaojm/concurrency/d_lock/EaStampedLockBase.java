@@ -1,4 +1,4 @@
-package com.zhaojm.concurrency.lock;
+package com.zhaojm.concurrency.d_lock;
 
 import java.util.concurrent.locks.StampedLock;
 

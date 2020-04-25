@@ -1,4 +1,4 @@
-package com.zhaojm.concurrency.base;
+package com.zhaojm.concurrency.a_base;
 
 /**
  * 当一个线程调用共享对象的 wait() 方法被阻塞挂起后，

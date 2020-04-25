@@ -1,4 +1,4 @@
-package com.zhaojm.concurrency.base;
+package com.zhaojm.concurrency.a_base;
 
 /**
  * Java 中的线程分为两类，分别为daemon 线程(守护线程)和user 线程（用户线程）。

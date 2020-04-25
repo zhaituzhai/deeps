@@ -1,4 +1,4 @@
-package com.zhaojm.concurrency.base;
+package com.zhaojm.concurrency.a_base;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;

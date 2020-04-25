@@ -1,4 +1,4 @@
-package com.zhaojm.concurrency.base;
+package com.zhaojm.concurrency.a_base;
 
 /**
  * threadLocal 的值不支持继承性  父线程的设置的值，子线程无法取到
