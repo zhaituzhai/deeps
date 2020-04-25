@@ -16,6 +16,10 @@ public class AbParkUnpark {
             System.out.println("child thread begin park!");
             while (!Thread.currentThread().isInterrupted()) {
                 LockSupport.park();
+                // 挂起 nanos 时间后修改为自动返回
+                LockSupport.parkNanos(1000);
+                //
+                LockSupport.park(Thread.currentThread());
             }
             System.out.println("child thread unpark!");
         });
