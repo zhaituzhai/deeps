@@ -20,7 +20,7 @@ public class AaThreadPoolExecutor {
          * 4.1、二次检查
          * 4.2、如果当前线程池状态不是 Running 则从队列中删除任务，并执行拒绝策略
          * 4.3、否则如果当前线程池为空，则添加一个线程
-         * 5、如果队列满，则新增线程，新增失败则执行拒绝策略
+         * 5、如果队列满，则新增线程，新增失败则执行拒绝策略dang'ji
          */
         executor.execute(() -> {
             System.out.println("hello thread pool!");
