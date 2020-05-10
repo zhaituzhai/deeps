@@ -12,6 +12,7 @@
         <module>mybatis-self</module>
         <module>mybatis-self</module>
         <module>concurrency</module>
+        <module>jvm</module>
     </modules>
     <packaging>pom</packaging>
     <name>deeps</name>

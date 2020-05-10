@@ -43,3 +43,76 @@ MyBatis 源码  **mybaits-3**
     4. 序列化 Serializable 事务串行执行 
 3. MyBatis 事务管理
     1. JdbcTransaction 
+    
+    
+## 并发编程
+
+### 并发编程基础
+1. 基础知识  com.zhaojm.concurrency.a_base;
+    1. 什么是线程
+    2. 线程创建于运行
+    3. 线程通知与等待
+    4. 等待线程执行终止的 join 方法
+    5. sleep 
+    6. 上下文切换
+    7. 线程中断
+    8. 线程死锁
+    9. 守护线程与用户线程
+    10. ThreadLocal / InheritableThreadLocal
+2. 其他基础知识  com.zhaojm.concurrency.b_base;
+    1. 原子操作类
+    2. 共享变量的内存可见性
+    3. synchronized 关键字
+    4. volatile 关键字
+    5. CAS 操作
+    6. Unsafe 类
+    7. 锁的概述: 乐观锁与悲观锁，公平锁与非公平锁，独占锁与共享锁，可重入锁，自旋锁
+3. Java 并发包中的 ThreadLocalRandom 类原理剖析
+    1. Random 类及其局限性
+    2. ThreadLocalRandom
+4. Java 并发包中原子操作类 LongAdder com.zhaojm.concurrency.c_sources;
+    1. AtomicXXX 等原子变量操作类 大量线程竞争一个原子变量，会造成大量线程竞争失败
+    2. LongAdder 设置了 Cell 变量， 原子变量的总数就是为所有的 Cell 中的总和。 克服了大量线程竞争一个竞争量
+    3. LongAccumulator：可以提供非 0 的初始值，LongAdder 只能提供 0 值。支持双目运算。
+5. Java 并发包中的并发 List 源码
+    1. CopyOnWriterArrayList 源码剖析
+6. Java 并发包中锁原理
+    1. LockSupport 工具类 park() / unpark()
+    2. FIFO Mutex
+    3. AQS 基础 / Condition
+    4. 基于 AQS 的独占作 ReentrantLock 原理  公平 / 非公平机制
+    5. 读写锁 ReentrantReadWriteLock 原理 state 高位 / 低位储存读写两个锁的机制
+    6. StampedLock 原理
+    7. doubleCheck 单例模式
+7. Java 并发包中并发队列原理
+    1. ConcurrentLinkedQueue 线程安全的无界非阻塞队列 单向链表
+    2. LinkedBlockingQueue 独占锁实现阻塞队列 单向链表
+    3. ArrayBlockingQueue 有边界的
+    4. PriorityBlockingQueue 带优先级的无界阻塞队列，每次出列都返回优先级最高或者最低的元素；
+    5. DelayQueue 内部使用 PriorityQueue 存放数据，使用 ReentrantLock 实现线程同步。
+8. Java 并发包线程池原理
+    1. 三种线程池
+        newCachedThreadPool (线程池线程可用个数可达 Integer.MAX_VALUE)  
+        newFixedThreadPool (固定大小的线程池)  
+        newSingleThreadExecutor (单个线程池，单排队的线程可达 Integer.MAX_VALUE)  
+    2. 线程池使用 Integer 的高位和低位记录线程池状态与线程个数。
+
+
+## JVM
+
+### java 类加载机制
+1. 类加载器
+    1. 常见类加载器只有3种
+    2. 引导类加载器   ===> Bootstrap Class Loader
+    3. 扩展类加载器   ===> Extension Class Loader
+    4. 系统类加载器   ===> System Class Loader
+    5. 自定义加载器   ===> User-Defined Class Loader
+2. 双亲委派机制
+    *工作原理*
+    1. 如果一个类加载器收到一个类加载的请求，它并不会自己先去加载，而是把这个请求委托给父类加载器去执行。
+    2. 如果还存在父类加载器，则继续向上委托。
+    3. 如果父类加载器可以完成类加载任务，就成功返回，倘若父类加载器无法完成加载任务，子加载任务，子加载器才会自己尝试区加载
+    *优势*
+    1. 避免类的重复加载
+    2. 保护程序安全，防止核心API被随意篡改
+        java.lang.SelfClass ==> classNotFondClass

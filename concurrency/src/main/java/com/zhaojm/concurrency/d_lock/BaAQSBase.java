@@ -52,7 +52,7 @@ public class BaAQSBase {
 
     /*
 
-    TODO AQS 类并没有提供可用的句Acquire 和町Release 方法，正如AQS
+    TODO AQS 类并没有提供可用的句Acquire 和 Release 方法，正如AQS
     是锁阻塞和同步器的基础框架一样， t可Acquire 和tryRelease 需要由具体的子类来实现。
     子类在实现tryAcquire 和tryRelease 时要根据具体场景使用CAS 算法尝试修改state 状态值，
     成功则返回true，否则返回false 。子类还需要定义，在调用acquire 和release 方法时state
