@@ -1,0 +1,97 @@
+Classfile /D:/Workspaces/IDEASpace/deeps/jvm/target/classes/com/zhaojm/jvm/g_mataspace/BaMethodAreaDemo.class
+  Last modified 2020-5-17; size 664 bytes
+  MD5 checksum 7f6248ab9eada40422c530a9f752207f
+  Compiled from "BaMethodAreaDemo.java"
+public class com.zhaojm.jvm.g_mataspace.BaMethodAreaDemo
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #5.#24         // java/lang/Object."<init>":()V
+   #2 = Fieldref           #25.#26        // java/lang/System.out:Ljava/io/PrintStream;
+   #3 = Methodref          #27.#28        // java/io/PrintStream.println:(I)V
+   #4 = Class              #29            // com/zhaojm/jvm/g_mataspace/BaMethodAreaDemo
+   #5 = Class              #30            // java/lang/Object
+   #6 = Utf8               <init>
+   #7 = Utf8               ()V
+   #8 = Utf8               Code
+   #9 = Utf8               LineNumberTable
+  #10 = Utf8               LocalVariableTable
+  #11 = Utf8               this
+  #12 = Utf8               Lcom/zhaojm/jvm/g_mataspace/BaMethodAreaDemo;
+  #13 = Utf8               main
+  #14 = Utf8               ([Ljava/lang/String;)V
+  #15 = Utf8               args
+  #16 = Utf8               [Ljava/lang/String;
+  #17 = Utf8               x
+  #18 = Utf8               I
+  #19 = Utf8               y
+  #20 = Utf8               a
+  #21 = Utf8               b
+  #22 = Utf8               SourceFile
+  #23 = Utf8               BaMethodAreaDemo.java
+  #24 = NameAndType        #6:#7          // "<init>":()V
+  #25 = Class              #31            // java/lang/System
+  #26 = NameAndType        #32:#33        // out:Ljava/io/PrintStream;
+  #27 = Class              #34            // java/io/PrintStream
+  #28 = NameAndType        #35:#36        // println:(I)V
+  #29 = Utf8               com/zhaojm/jvm/g_mataspace/BaMethodAreaDemo
+  #30 = Utf8               java/lang/Object
+  #31 = Utf8               java/lang/System
+  #32 = Utf8               out
+  #33 = Utf8               Ljava/io/PrintStream;
+  #34 = Utf8               java/io/PrintStream
+  #35 = Utf8               println
+  #36 = Utf8               (I)V
+{
+  public com.zhaojm.jvm.g_mataspace.BaMethodAreaDemo();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 7: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/zhaojm/jvm/g_mataspace/BaMethodAreaDemo;
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=5, args_size=1
+         0: sipush        500               // 将 500 入栈
+         3: istore_1                        // 存储在本地变量表的1位置
+         4: bipush        100               // 100 入栈
+         6: istore_2                        // 存储在本地变量表的2位置
+         7: iload_1                         // 读取本地变量表 1 中的值压入操作数栈
+         8: iload_2                         // 读取本地变量表 2 中的值压入操作数栈
+         9: idiv                            // 操作除法
+        10: istore_3                        // 把结果存储在本地变量表 3位置
+        11: bipush        50                // 50 入栈
+        13: istore        4                 // 将栈顶int类型的值存储在本地变量表的4位置
+        15: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;  System.out
+        18: iload_3                         // 读取 3 位置上的值
+        19: iload         4                 // 读取 4 位置上的值
+        21: iadd                            // 执行 加
+        22: invokevirtual #3                  // Method java/io/PrintStream.println:(I)V 调用静态方法。
+        25: return                          // 返回
+      LineNumberTable:
+        line 9: 0
+        line 10: 4
+        line 11: 7
+        line 12: 11
+        line 13: 15
+        line 14: 25
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      26     0  args   [Ljava/lang/String;
+            4      22     1     x   I
+            7      19     2     y   I
+           11      15     3     a   I
+           15      11     4     b   I
+}
+SourceFile: "BaMethodAreaDemo.java"
