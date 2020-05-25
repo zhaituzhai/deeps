@@ -1,5 +1,7 @@
 package com.zhaojm.deeps.leetcode;
 
+import java.util.Stack;
+
 /**
  *
  * 给你一幅由 N × N 矩阵表示的图像，其中每个像素的大小为 4 字节。请你设计一种算法，将图像旋转 90 度。
@@ -28,4 +30,32 @@ package com.zhaojm.deeps.leetcode;
  * @date 2020/4/7 21:26
  */
 public class Rotate {
+    public static void main(String[] args) {
+
+    }
+
+    public void test(String s) {
+        StringBuffer str = new StringBuffer();
+        Stack<Integer> temp = new Stack<>();
+        char[] sp = s.toCharArray();
+        for (int rigth = 0; rigth < sp.length; rigth++) {
+            if(sp[rigth] == '[' || sp[rigth] == '|') {
+                temp.push(rigth);
+            }
+            if(sp[rigth] == ']') {
+                int k = temp.peek();
+                temp.pop();
+                int left = temp.peek();
+                temp.pop();
+                int num = new Integer(s.substring(k+1, k-left));
+                String s1 = s.substring(k + 1, rigth - k - 1);
+                String s2 = "";
+                for (int i = 0; i < num; i++) {
+                    s2 += s1;
+                }
+//                s = s.replace(left, rigth - left + 1, s2);
+                rigth = left + s2.length() - 1;
+            }
+        }
+    }
 }
