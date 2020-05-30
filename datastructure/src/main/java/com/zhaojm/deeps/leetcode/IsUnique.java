@@ -23,7 +23,13 @@ import java.util.Set;
  */
 public class IsUnique {
     public static void main(String[] args) {
-        System.out.println(isUnique("abc"));
+        String value = "行业 \r\n" +
+                "分类";
+        System.out.println(value);
+        value = value.replaceAll("\r\n|\n", "");
+
+
+        System.out.println(value);
     }
 
     public static boolean isUnique(String astr) {
