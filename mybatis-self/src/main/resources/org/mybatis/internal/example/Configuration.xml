@@ -17,6 +17,7 @@
         <!--<setting name="localCacheScope" value="SESSION|STATEMENT" />-->
         <!--二级缓存-->
         <!--<setting name="cacheEnabled" value="true|false" />-->
+        <setting name="cacheEnabled" value="true"/>
     </settings>
     <plugins>
         <plugin interceptor="org.mybatis.internal.example.interceptor.MyBatisInterceptor">

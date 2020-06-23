@@ -54,6 +54,9 @@ public class MybatisHelloWorld {
                 // // 这样当我们应用层执行List users = mapper.getUser(1);的时候，JVM会首先调用 MapperProxy.invoke，如下：
                 // User user = mapper.getUser(1);
                 System.out.println(user.getUserId() + "," + user.getUsername() + "," + user.getAge());
+                session.commit();
+                user = session.selectOne("org.mybatis.internal.example.mapper.UserMapper.getUser", 1);
+                System.out.println(user.getUserId() + "," + user.getUsername() + "," + user.getAge());
                 // session.commit();
             }
         } catch (IOException e) {

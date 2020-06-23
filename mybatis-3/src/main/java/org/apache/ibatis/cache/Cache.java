@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReadWriteLock;
  * }
  * </pre>
  *
- * mybatis提供了基本实现org.apache.ibatis.cache.impl.PerpetualCache，内部采用原始HashMap实现。
+ * mybatis提供了基本实现 {@link org.apache.ibatis.cache.impl.PerpetualCache}，内部采用原始HashMap实现。
  * 第二个需要知道的方面是mybatis有一级缓存和二级缓存。
  *    一级缓存是SqlSession级别的缓存，不同SqlSession之间的缓存数据区域（HashMap）是互相不影响，MyBatis默认支持一级缓存，
  *    不需要任何的配置，默认情况下(一级缓存的有效范围可通过参数localCacheScope参数修改，取值为 SESSION 或者 STATEMENT )，

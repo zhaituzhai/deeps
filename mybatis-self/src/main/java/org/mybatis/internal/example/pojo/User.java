@@ -1,10 +1,14 @@
 package org.mybatis.internal.example.pojo;
 
+import java.io.Serializable;
+
 /**
  * @author zhaojm
  * @date 2020-03-30 14:11
  */
-public class User {
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Integer userId;
     private String username;
