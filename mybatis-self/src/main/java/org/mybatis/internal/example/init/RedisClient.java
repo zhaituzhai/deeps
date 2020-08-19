@@ -3,6 +3,7 @@ package org.mybatis.internal.example.init;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.params.SetParams;
 
 import javax.naming.Name;
 import java.io.*;
@@ -61,6 +62,10 @@ public class RedisClient {
     }
 
     public static <K, T> void putValue(K key, T value) {
+        putValue(key, value, 15 * 60);// 15min
+    }
+
+    public static <K, T> void putValue(K key, T value, int expireTime) {
         if(null != value) {
             byte[] byteValue = new byte[0];
             try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -72,7 +77,9 @@ public class RedisClient {
             }
             Jedis jedis = JEDIS_POOL.getResource();
             // TODO key 值使用的 CacheKey 的 toString 键值较长，如何简短并唯一？
-            jedis.set(key.toString(), Base64.getEncoder().encodeToString(byteValue));
+            SetParams setParams = new SetParams();
+            setParams.ex(expireTime);
+            jedis.set(key.toString(), Base64.getEncoder().encodeToString(byteValue), setParams);
         }
     }
 
