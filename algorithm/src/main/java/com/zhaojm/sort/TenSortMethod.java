@@ -7,18 +7,20 @@ public class TenSortMethod {
     public static void main(String[] args) {
         // System.out.println(excelColIndex(45));
 
-        System.out.println("bubble sort ==> " + Arrays.toString(bubbleSort(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("selection sort ==> " + Arrays.toString(selectionSort(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("change select sort ==> " + Arrays.toString(selectionSortChange(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("insert sort ==> " + Arrays.toString(insertSort(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("change insert sort ==> " + Arrays.toString(insertSortChange(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("shell sort ==> " + Arrays.toString(shellSort(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("change shell sort ==> " + Arrays.toString(shellSortChange(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("merge sort ==> " + Arrays.toString(mergeSort(new int[]{9,8,7,6,5,4,3,2,1})));
-        // System.out.println("quick sort ==> " + Arrays.toString(quickSort(new int[]{9,5,7,5,4,2,1,2})));
-        System.out.println("quick sort ==> " + Arrays.toString(quickSort(new int[]{1,12,5,26,7,14,3,7,2})));
-        System.out.println("heap sort ==> " + Arrays.toString(heapSort(new int[]{1,12,5,26,7,14,3,7,2})));
-        System.out.println("heap slef sort ==> " + Arrays.toString(heapSortSelf(new int[]{1,12,5,26,7,14,3,7,2})));
+        // System.out.println("bubble sort ==> " + Arrays.toString(bubbleSort(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("selection sort ==> " + Arrays.toString(selectionSort(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("change select sort ==> " + Arrays.toString(selectionSortChange(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("insert sort ==> " + Arrays.toString(insertSort(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("change insert sort ==> " + Arrays.toString(insertSortChange(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("shell sort ==> " + Arrays.toString(shellSort(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("change shell sort ==> " + Arrays.toString(shellSortChange(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("merge sort ==> " + Arrays.toString(mergeSort(new int[]{9,8,7,6,5,4,3,2,1})));
+        // // System.out.println("quick sort ==> " + Arrays.toString(quickSort(new int[]{9,5,7,5,4,2,1,2})));
+        // System.out.println("quick sort ==> " + Arrays.toString(quickSort(new int[]{1,12,5,26,7,14,3,7,2})));
+        // System.out.println("heap sort ==> " + Arrays.toString(heapSort(new int[]{1,12,5,26,7,14,3,7,2})));
+        // System.out.println("heap slef sort ==> " + Arrays.toString(heapSortSelf(new int[]{1,12,5,26,7,14,3,7,2})));
+        System.out.println("shell sort ==> " + Arrays.toString(shellSort1(new int[]{7,12,5,26,1,14,3,7,2})));
+        System.out.println("shell 2 sort ==> " + Arrays.toString(shellSort(new int[]{8,9,10,11,24,56,55,44,43,42,23,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1})));
     }
 
     /**
@@ -134,6 +136,23 @@ public class TenSortMethod {
      * @return
      */
     public static int[] shellSort(int[] nums) {
+        int len = nums.length;
+        for (int step = len / 2; step > 0; step = step / 2) {
+            int temp;
+            for (int start = step; start < len; start++) {
+                for (int i = start; i > step - 1; i = i - step) {
+                    if (nums[i] < nums[i - step]) {
+                        temp = nums[i - step];
+                        nums[i - step] = nums[i];
+                        nums[i] = temp;
+                    }
+                }
+            }
+        }
+        return nums;
+    }
+
+    public static int[] shellSort1(int[] nums) {
         int len = nums.length;
         for (int step = len / 2; step > 0; step = step / 2) {
             int temp;
