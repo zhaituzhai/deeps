@@ -12,4 +12,6 @@ newSingleThreadExecutor (单个线程池，单排队的线程可达 Integer.MAX_
 
 Executors 是一个工具类，提供不同线程池实例的静态方法。
 
-ThreadPoolExecutor 继承了 AbstractExecutorService 成员变量 ctl 是一个 integer 的原子变量。用来记录线程池状态和线程池中线程个数
+ThreadPoolExecutor 继承了 AbstractExecutorService 成员变量 ctl 是一个 integer 的原子变量。
+用来记录线程池状态和线程池中线程个数
+

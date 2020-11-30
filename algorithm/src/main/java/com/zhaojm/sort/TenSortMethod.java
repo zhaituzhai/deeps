@@ -19,8 +19,8 @@ public class TenSortMethod {
         // System.out.println("quick sort ==> " + Arrays.toString(quickSort(new int[]{1,12,5,26,7,14,3,7,2})));
         // System.out.println("heap sort ==> " + Arrays.toString(heapSort(new int[]{1,12,5,26,7,14,3,7,2})));
         // System.out.println("heap slef sort ==> " + Arrays.toString(heapSortSelf(new int[]{1,12,5,26,7,14,3,7,2})));
-        System.out.println("shell sort ==> " + Arrays.toString(shellSort1(new int[]{7,12,5,26,1,14,3,7,2})));
-        System.out.println("shell 2 sort ==> " + Arrays.toString(shellSort(new int[]{8,9,10,11,24,56,55,44,43,42,23,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1})));
+        System.out.println("merge sort ==> " + Arrays.toString(quickSort(new int[]{7,12,5,26,1,14,3,7,2})));
+        System.out.println("merge 2 sort ==> " + Arrays.toString(mergeSort1(new int[]{8,9,10,11,24,56,55,44,43,42,23,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1})));
     }
 
     /**
@@ -212,21 +212,61 @@ public class TenSortMethod {
         int start2 = mid + 1, end2 = end;
         mergeSort(nums, result, start1, end1);
         mergeSort(nums, result, start2, end2);
-        // 2、合并
+        // 2、合并 回溯
         int k = start;
-        //
+        // 2.1 如果左右分支都有数据
         while (start1 <= end1 && start2 <= end2) {
             result[k++] = nums[start1] < nums[start2] ? nums[start1++] : nums[start2++];
         }
+        // 2.2 只有左分的数据
         while (start1 <= end1) {
             result[k++] = nums[start1++];
         }
+        // 2.3 只有右分支的数据
         while (start2 <= end2) {
-            result[k++] = nums[start2];
+            result[k++] = nums[start2++];
         }
+        // 3、数据重新写到原始数组中
         for (k = start; k <= end; k++) {
             nums[k] = result[k];
         }
+    }
+
+    public static int[] mergeSort1(int[] nums) {
+        int len = nums.length;
+        if (len < 2) return nums;
+        int[] result = new int[len];
+        mergeSort1(nums, result, 0, len - 1);
+        return result;
+    }
+
+    public static void mergeSort1(int[] nums, int[] result, int start, int end) {
+        if (start >= end) return; // 定义结束标识
+        int len = end - start, mid = (len >> 1) + start;
+        int start1 = start, end1 = mid;
+        int start2 = mid + 1, end2 = end;
+
+        mergeSort1(nums, result, start1, end1); // 拆左边
+        mergeSort1(nums, result, start2, end2); // 拆右边
+
+        int k = start;
+
+        while (start1 <= end1 && start2 <= end2) {
+            result[k++] = nums[start1] < nums[start2] ? nums[start1++] : nums[start2++];
+        }
+
+        while (start1 <= end1) {
+            result[k++] = nums[start1++];
+        }
+
+        while (start2 <= end2) {
+            result[k++] = nums[start2++];
+        }
+
+        for (k = start; k <= end; k++) {
+            nums[k] = result[k];
+        }
+
     }
 
     /*public static int[] mergeSort(int[] nums) {
