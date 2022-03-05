@@ -1,0 +1,558 @@
+我们一步一步来剖析这道算法题！！！！
+
+### 1. 减法代替除法
+
+我们最简单可以想到的是：使用减法代替除法，请看视频：
+
+![1_001_减法代替除法.mp4](https://leetcode-cn.com/problems/xoh6Oh/solution/jian-dan-yi-dong-javac-pythonjs-zheng-sh-e8r6/9bbda531-b267-4593-9c99-3ca7d0a13b96)
+
+### 2. 考虑边界问题
+
+以上代码没有考虑清楚边界问题，请看视频：
+
+![2_001_考虑边界条件.mp4](https://leetcode-cn.com/problems/xoh6Oh/solution/jian-dan-yi-dong-javac-pythonjs-zheng-sh-e8r6/95f54d92-45dc-43f1-bf64-729563f2baa2)
+
+代码如下：
+
+* []
+
+```java
+// 因为将 -2147483648 转成正数会越界，但是将 2147483647 转成负数，则不会
+// 所以，我们将 a 和 b 都转成负数
+// 时间复杂度：O(n)，n 是最大值 2147483647 --> 10^10 --> 超时
+public int divide2(int a, int b) {
+    // 32 位最大值：2^31 - 1 = 2147483647
+    // 32 位最小值：-2^31 = -2147483648
+    // -2147483648 / (-1) = 2147483648 > 2147483647 越界了
+    if (a == Integer.MIN_VALUE && b == -1)
+        return Integer.MAX_VALUE;
+    int sign = (a > 0) ^ (b > 0) ? -1 : 1;
+    // 环境只支持存储 32 位整数
+    if (a > 0) a = -a;
+    if (b > 0) b = -b;
+    int res = 0;
+    while (a <= b) {
+        a -= b;
+        res++;
+    }
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res;
+}
+```
+
+* []
+
+```javascript
+// 超时
+var divide1 = function(a, b) {
+    const INT_MIN = -Math.pow(2, 31)
+    const INT_MAX = Math.pow(2, 31) - 1
+
+    if (a == INT_MIN && b == -1) return INT_MAX
+
+    const sign = (a > 0) ^ (b > 0) ? -1 : 1
+    if (a > 0) a = -a 
+    if (b > 0) b = -b 
+
+    let res = 0
+    while (a <= b) {
+        a -= b
+        res++
+    }
+
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res
+};
+```
+
+* []
+
+```python
+# 超时
+def divide1(self, a: int, b: int) -> int:
+    INT_MIN, INT_MAX = -2**31, 2**31 - 1
+    if a == INT_MIN and b == -1:
+        return INT_MAX
+    
+    sign = -1 if (a > 0) ^ (b > 0) else 1
+    if a > 0:
+        a = -a
+    if b > 0:
+        b = -b
+
+    ans = 0
+    while a <= b:
+        a -= b
+        ans += 1
+    
+    # bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return ans if sign == 1 else -ans
+```
+
+* []
+
+```c++
+int divide(int a, int b) {
+    if (a == INT_MIN && b == -1) return INT_MAX;
+
+    int sign = (a > 0) ^ (b > 0) ? -1 : 1;
+
+    if (a > 0) a = -a;
+    if (b > 0) b = -b;
+    
+    unsigned int res = 0;
+    while (a <= b) {
+        a -= b;
+        res++;
+    }
+
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res;
+}
+```
+
+* []
+
+```golang
+// 超时
+// 因为将 -2147483648 转成正数会越界，但是将 2147483647 转成负数，则不会
+// 所以，我们将 a 和 b 都转成负数
+// 时间复杂度：O(n)，n 是最大值 2147483647 --> 10^10
+func divide1(a int, b int) int {
+    if a == math.MinInt32 && b == -1 {
+        return math.MaxInt32
+    }
+
+    sign := 1
+    if (a > 0 && b < 0) || (a < 0 && b > 0) {
+        sign = -1
+    }
+
+    if a > 0 {
+        a = -a
+    }
+    if b > 0 {
+        b = -b
+    }
+
+    res := 0
+    for a <= b {
+        a -= b
+        res++
+    }
+    return sign * res
+}
+```
+
+- 时间复杂度：O(n)
+- 空间复杂度：O(1)
+
+### 3. 优化，降低时间复杂度
+
+请看视频：
+
+![...001_优化-每次减去除数的倍数.mp4](https://leetcode-cn.com/problems/xoh6Oh/solution/jian-dan-yi-dong-javac-pythonjs-zheng-sh-e8r6/0ae60ffc-c779-4bda-b8f0-62ff5a075fb5)
+
+代码如下：
+
+* []
+
+```java
+// 时间复杂度：O(logn * logn)，n 是最大值 2147483647 --> 10^10
+public int divide(int a, int b) {
+    if (a == Integer.MIN_VALUE && b == -1)
+        return Integer.MAX_VALUE;
+    int sign = (a > 0) ^ (b > 0) ? -1 : 1;
+    if (a > 0) a = -a;
+    if (b > 0) b = -b;
+    int res = 0;
+    while (a <= b) {
+        int value = b;
+        int k = 1;
+        // 0xc0000000 是十进制 -2^30 的十六进制的表示
+        // 判断 value >= 0xc0000000 的原因：保证 value + value 不会溢出
+        // 可以这样判断的原因是：0xc0000000 是最小值 -2^31 的一半，
+        // 而 a 的值不可能比 -2^31 还要小，所以 value 不可能比 0xc0000000 小
+        // -2^31 / 2 = -2^30
+        while (value >= 0xc0000000 && a <= value + value) {
+            value += value;
+            // 代码优化：如果 k 已经大于最大值的一半的话，那么直接返回最小值
+            // 因为这个时候 k += k 的话肯定会大于等于 2147483648 ，这个超过了题目给的范围
+            if (k > Integer.MAX_VALUE / 2) {
+                return Integer.MIN_VALUE;
+            }
+            k += k;
+        }
+        a -= value;
+        res += k;
+    }
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res;
+}
+```
+
+* []
+
+```javascript
+// 超时
+var divide1 = function(a, b) {
+    const INT_MIN = -Math.pow(2, 31)
+    const INT_MAX = Math.pow(2, 31) - 1
+
+    if (a == INT_MIN && b == -1) return INT_MAX
+
+    const sign = (a > 0) ^ (b > 0) ? -1 : 1
+    if (a > 0) a = -a 
+    if (b > 0) b = -b 
+
+    let res = 0
+    while (a <= b) {
+        let value = b
+        let k = 1
+        while (value >= 0xc0000000 && a <= value + value) {
+            value += value
+            if (k > Math.floor(INT_MAX / 2)) return INT_MIN
+            k += k
+        }
+        a -= value
+        res += k
+    }
+
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res
+};
+```
+
+* []
+
+```python
+# 超时
+def divide1(self, a: int, b: int) -> int:
+    INT_MIN, INT_MAX = -2**31, 2**31 - 1
+    if a == INT_MIN and b == -1:
+        return INT_MAX
+    
+    sign = -1 if (a > 0) ^ (b > 0) else 1
+    if a > 0:
+        a = -a
+    if b > 0:
+        b = -b
+
+    ans = 0
+    while a <= b:
+        value, k = b, 1
+        while value >= 0xc0000000 and a <= value + value:
+            value += value
+            if k > INT_MAX // 2:
+                return INT_MIN
+            k += k
+            
+        ans, a = ans + k, a - value
+    
+    # bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return ans if sign == 1 else -ans
+```
+
+* []
+
+```c++
+int divide(int a, int b) {
+    if (a == INT_MIN && b == -1) return INT_MAX;
+
+        int sign = (a > 0) ^ (b > 0) ? -1 : 1;
+
+        if (a > 0) a = -a;
+        if (b > 0) b = -b;
+        
+        int res = 0;
+        while (a <= b) {
+            int value = b;
+            int k = 1;
+            // 0xc0000000 是十进制 -2^30 的十六进制的表示
+            // 判断 value >= 0xc0000000 的原因：保证 value + value 不会溢出
+            // 可以这样判断的原因是：0xc0000000 是最小值 -2^31 的一半，
+            // 而 a 的值不可能比 -2^31 还要小，所以 value 不可能比 0xc0000000 小
+            while (value >= 0xc0000000 && a <= value + value) {
+                value += value;
+                // 代码优化：如果 k 已经大于最大值的一半的话，那么直接返回最小值
+                // 因为这个时候 k += k 的话肯定会大于等于 2147483648 ，这个超过了题目给的范围
+                if (k > INT_MAX / 2) return INT_MIN;
+                k += k;
+            }
+            a -= value;
+            res += k;
+        }
+
+        // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+        return sign == 1 ? res : -res;
+}
+
+```
+
+* []
+
+```golang
+// 超时 时间复杂度：O(logn * logn)，n 是最大值 2147483647 --> 10^10
+func divide2(a int, b int) int {
+    if a == math.MinInt32 && b == -1 {
+        return math.MaxInt32
+    }
+
+    sign := 1
+    if (a > 0 && b < 0) || (a < 0 && b > 0) {
+        sign = -1
+    }
+
+    if a > 0 {
+        a = -a
+    }
+    if b > 0 {
+        b = -b
+    }
+
+    res := 0
+    for a <= b {
+        value, k := b, 1
+        // 0xc0000000 是十进制 -2^30 的十六进制的表示
+        // 判断 value >= 0xc0000000 的原因：保证 value + value 不会溢出
+        // 可以这样判断的原因是：0xc0000000 是最小值 -2^31 的一半，
+        // 而 a 的值不可能比 -2^31 还要小，所以 value 不可能比 0xc0000000 小
+        // -2^31 / 2 = -2^30
+        for value >= 0xc0000000 && a <= value + value {
+            value += value
+            // 代码优化：如果 k 已经大于最大值的一半的话，那么直接返回最小值
+            // 因为这个时候 k += k 的话肯定会大于等于 2147483648 ，这个超过了题目给的范围
+            if k > math.MaxInt32 / 2 {
+                return math.MinInt32
+            }
+            k += k
+        }
+        a -= value
+        res += k
+    }
+    return sign * res
+}
+```
+
+- 时间复杂度：O(logn * logn) ，使用 python 和 javascript 会超时，看下面的优化
+- 空间复杂度：O(1)
+
+### 4. 继续优化，使用位运算来优化
+
+请看视频：
+
+![...01_使用位运算优化算法-无广告.mp4](https://leetcode-cn.com/problems/xoh6Oh/solution/jian-dan-yi-dong-javac-pythonjs-zheng-sh-e8r6/3aedc0ec-64e6-495b-aacd-a76c5d27764a)
+
+代码如下：
+
+* []
+
+```java
+// 时间复杂度：O(1)
+public int divide(int a, int b) {
+    if (a == Integer.MIN_VALUE && b == -1)
+        return Integer.MAX_VALUE;
+    int sign = (a > 0) ^ (b > 0) ? -1 : 1;
+    a = Math.abs(a);
+    b = Math.abs(b);
+    int res = 0;
+    for (int i = 31; i >= 0; i--) {
+        // 首先，右移的话，再怎么着也不会越界
+        // 其次，无符号右移的目的是：将 -2147483648 看成 2147483648
+
+        // 注意，这里不能是 (a >>> i) >= b 而应该是 (a >>> i) - b >= 0
+        // 这个也是为了避免 b = -2147483648，如果 b = -2147483648
+        // 那么 (a >>> i) >= b 永远为 true，但是 (a >>> i) - b >= 0 为 false
+        if ((a >>> i) - b >= 0) { // a >= (b << i)
+            a -= (b << i);
+            // 代码优化：这里控制 res 大于等于 INT_MAX
+            if (res > Integer.MAX_VALUE - (1 << i)) {
+                return Integer.MIN_VALUE;
+            }
+            res += (1 << i);
+        }
+    }
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res;
+}
+```
+
+* []
+
+```javascript
+var divide = function(a, b) {
+    const INT_MIN = -Math.pow(2, 31)
+    const INT_MAX = Math.pow(2, 31) - 1
+
+    if (a == INT_MIN && b == -1) return INT_MAX
+
+    let res = 0
+
+    // 处理边界，防止转正数溢出
+    // 除数绝对值最大，结果必为 0 或 1
+    if (b == INT_MIN) {
+        return a == b? 1 : 0;
+    }
+
+    // 被除数先减去一个除数
+    if (a == INT_MIN) {
+        a -= -Math.abs(b);
+        res += 1;
+    }
+
+    const sign = (a > 0) ^ (b > 0) ? -1 : 1
+    a = Math.abs(a)
+    b = Math.abs(b)
+
+    for (let x = 31; x >= 0; x--) {
+        if ((a >>> x) - b >= 0) {
+            a = a - (b << x)
+            // 代码优化：这里控制 res 大于等于 INT_MAX
+            if (res > INT_MAX - (1 << x)) {
+                return INT_MIN;
+            }
+            res = res + (1 << x)
+        }
+    }
+    if (res == -2147483648) return -2147483648
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res
+};
+```
+
+* []
+
+```python
+def divide(self, a: int, b: int) -> int:
+    INT_MIN, INT_MAX = -2**31, 2**31 - 1
+    if a == INT_MIN and b == -1:
+        return INT_MAX
+
+    ans = 0
+
+    # 处理边界，防止转正数溢出
+    if b == INT_MIN:  # 除数绝对值最大，结果必为 0 或 1
+        return 1 if a == b else 0
+    if a == INT_MIN:  # 被除数先减去一个除数
+        a -= -abs(b)
+        ans += 1
+
+    sign = -1 if (a > 0) ^ (b > 0) else 1
+
+    a, b = abs(a), abs(b)
+    for i in range(31, -1, -1):
+        if (a >> i) - b >= 0:
+            a = a - (b << i)
+            # 代码优化：这里控制 ans 大于等于 INT_MAX
+            if ans > INT_MAX - (1 << i):
+                return INT_MIN
+            ans += 1 << i
+    # bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return ans if sign == 1 else -ans
+```
+
+* []
+
+```c++
+int divide(int a, int b) {
+    if (a == INT_MIN && b == -1) return INT_MAX;
+
+    int res = 0;
+    // 处理边界，防止转正数溢出
+    // 除数绝对值最大，结果必为 0 或 1
+    if (b == INT_MIN) {
+        return a == b? 1 : 0;
+    }
+
+    // 被除数先减去一个除数
+    if (a == INT_MIN) {
+        a -= -abs(b);
+        res += 1;
+    }
+
+    int sign = (a > 0) ^ (b > 0) ? -1 : 1;
+
+    int ua = abs(a);
+    int ub = abs(b);
+    for (int i = 31; i >= 0; i--) {
+        if ((ua >> i) >= ub) {
+            ua = ua - (ub << i);
+            // 代码优化：这里控制 ans 大于等于 INT_MAX
+            if (res > INT_MAX - (1 << i)) {
+                return INT_MIN;
+            }
+            res += 1 << i;
+        }
+    }
+    // bug 修复：因为不能使用乘号，所以将乘号换成三目运算符
+    return sign == 1 ? res : -res;
+}
+```
+
+* []
+
+```golang
+// 时间复杂度：O(1)
+func divide(a int, b int) int {
+    if a == math.MinInt32 && b == -1 {
+        return math.MaxInt32
+    }
+    res := 0
+
+    // 处理边界，防止转正数溢出
+    // 除数绝对值最大，结果必为 0 或 1
+    if b == math.MinInt32 {
+        if a == b {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+    // 被除数先减去一个除数
+    if (a == math.MinInt32) {
+        a -= -abs(b);
+        res += 1;
+    }
+
+    sign := 1
+    if (a > 0 && b < 0) || (a < 0 && b > 0) {
+        sign = -1
+    }
+
+    a = abs(a)
+    b = abs(b)
+
+    
+    for i := 31; i >= 0; i-- {
+        if (a >> i) - b >= 0 {
+            a = a - (b << i)
+            // 代码优化：这里控制 ans 大于等于 INT_MAX
+            if res > math.MaxInt32 - (1 << i) {
+                return math.MinInt32;
+            }
+            res += 1 << i
+        }
+    }
+    return sign * res
+}
+
+func abs(a int) int {
+    if a < 0 {
+        return -a
+    }
+    return a
+}
+```
+
+- 时间复杂度：O(1)
+- 空间复杂度：O(1)
+
+在刷题的时候：
+1. 如果你觉得自己数据结构与算法**基础不够扎实**，那么[请点这里](http://www.tangweiqun.com/api/31104/offer001?av=1&cv=1)，这里包含了**一个程序员 5 年内需要的所有算法知识**
+
+2. 如果你感觉刷题**太慢**，或者感觉**很困难**，或者**赶时间**，那么[请点这里](http://www.tangweiqun.com/api/35548/offer001?av=1&cv=1)。这里**用 365 道高频算法题，带你融会贯通算法知识，做到以不变应万变**
+
+3. **回溯、贪心和动态规划，是算法面试中的三大难点内容**，如果你只是想搞懂这三大难点内容 [请点这里](http://www.tangweiqun.com/api/38100/offer001?av=1&cv=1)
+
+**以上三个链接中的内容，都支持 Java/C++/Python/js/go 四种语言**
