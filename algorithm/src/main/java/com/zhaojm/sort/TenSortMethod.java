@@ -17,10 +17,10 @@ public class TenSortMethod {
         // System.out.println("merge sort ==> " + Arrays.toString(mergeSort(new int[]{9,8,7,6,5,4,3,2,1})));
         // // System.out.println("quick sort ==> " + Arrays.toString(quickSort(new int[]{9,5,7,5,4,2,1,2})));
         // System.out.println("quick sort ==> " + Arrays.toString(quickSort(new int[]{1,12,5,26,7,14,3,7,2})));
-        // System.out.println("heap sort ==> " + Arrays.toString(heapSort(new int[]{1,12,5,26,7,14,3,7,2})));
-        // System.out.println("heap slef sort ==> " + Arrays.toString(heapSortSelf(new int[]{1,12,5,26,7,14,3,7,2})));
-        System.out.println("merge sort ==> " + Arrays.toString(quickSort(new int[]{7,12,5,26,1,14,3,7,2})));
-        System.out.println("merge 2 sort ==> " + Arrays.toString(mergeSort1(new int[]{8,9,10,11,24,56,55,44,43,42,23,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1})));
+         System.out.println("heap sort ==> " + Arrays.toString(heapSort(new int[]{8,6,4,2,1,3,5,7,9})));
+//         System.out.println("heap slef sort ==> " + Arrays.toString(heapSortSelf(new int[]{1,12,5,26,7,14,3,7,2})));
+//        System.out.println("quickSort sort ==> " + Arrays.toString(quickSort(new int[]{8,9,10,11,24,56,55,44,43,42,23,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1})));
+//        System.out.println("merge 2 sort ==> " + Arrays.toString(mergeSort1(new int[]{8,9,10,11,24,56,55,44,43,42,23,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1})));
     }
 
     /**
