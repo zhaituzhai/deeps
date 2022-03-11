@@ -49,6 +49,11 @@ public class A235LowestCommonAncestorOfABinarySearchTree{
  *     TreeNode right;
  *     TreeNode(int x) { val = x; }
  * }
+ *
+ * - 年轻代: serial, parNew, parallel Scavenge
+ * - 老年代 : serial Old, CMS, parallel Old
+ * Concurrent Mark Sweep
+ *
  */
 
 class Solution {
