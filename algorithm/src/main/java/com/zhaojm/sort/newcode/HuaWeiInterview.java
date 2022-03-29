@@ -23,7 +23,14 @@ import java.util.*;
 public class HuaWeiInterview {
 
     public static void main(String[] args) {
-        System.out.println(firstUniqueChar("testengine"));
+//        System.out.println(firstUniqueChar("testengine"));
+        System.out.println(judge(8));
+    }
+
+    public static boolean judge(int n) {
+        if (n < 1) return false;
+        int m = n & (n - 1);
+        return m == 0;
     }
 
     public static int firstUniqueChar(String s) {
